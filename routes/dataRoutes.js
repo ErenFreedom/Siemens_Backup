@@ -2,9 +2,9 @@ const express = require('express');
 const router = express.Router();
 const { check } = require('express-validator');
 const dataController = require('../controllers/dataController');
-const authenticateToken = require('../middlewares/authenticateToken');
+const authenticateToken = require('../middlewares/authenticationToken');
 
-router.post('/data', authenticateToken, [
+router.post('/data', authenticateToken, [ 
     check('type').isAlpha().withMessage('Type must be alphabetic'),
     check('value').isNumeric().withMessage('Value must be numeric')
 ], dataController.postData);
