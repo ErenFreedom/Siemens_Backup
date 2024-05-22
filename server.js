@@ -7,7 +7,7 @@ const fs = require('fs');
 require('dotenv').config();
 
 const app = express();
-const port = process.env.PORT || 443;
+const port = process.env.PORT || 443; // Ensure the port is set to 443 for HTTPS
 
 const authRoutes = require('./routes/authRoutes');
 const dataRoutes = require('./routes/dataRoutes');
@@ -28,8 +28,8 @@ app.use(dataRoutes);
 
 // Load SSL/TLS certificates
 const options = {
-    key: fs.readFileSync('key.pem'),
-    cert: fs.readFileSync('cert.pem')
+    key: fs.readFileSync('./key.pem'), 
+    cert: fs.readFileSync('./cert.pem') 
 };
 
 // Create HTTPS server
