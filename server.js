@@ -2,10 +2,12 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
+const https = require('https');
+const fs = require('fs');
 require('dotenv').config();
 
 const app = express();
-const port = process.env.PORT || 80;
+const port = process.env.PORT || 443;
 
 const authRoutes = require('./routes/authRoutes');
 const dataRoutes = require('./routes/dataRoutes');
@@ -24,6 +26,13 @@ app.use(limiter);
 app.use(authRoutes);
 app.use(dataRoutes);
 
-app.listen(port, () => {
+// Load SSL/TLS certificates
+const options = {
+    key: fs.readFileSync('key.pem'),
+    cert: fs.readFileSync('cert.pem')
+};
+
+// Create HTTPS server
+https.createServer(options, app).listen(port, () => {
     console.log(`Server is running on port ${port}`);
 });
