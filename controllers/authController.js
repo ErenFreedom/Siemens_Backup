@@ -90,14 +90,23 @@ exports.login = (req, res) => {
 
 // Verify OTP and complete login
 exports.verifyLogin = async (req, res) => {
-    const { email, otp } = req.body;
-    const storedOtpData = otps.get(email);
+    const { identifier, otp } = req.body;
+    const query = 'SELECT * FROM users WHERE email = ? OR username = ?';
+    db.query(query, [identifier, identifier], (err, results) => {
+        if (err || results.length === 0) {
+            return res.status(400).send('Invalid identifier.');
+        }
 
-    if (!storedOtpData || storedOtpData.expiresAt < Date.now() || storedOtpData.otp !== otp) {
-        return res.status(400).send('Invalid or expired OTP.');
-    }
+        const user = results[0];
+        const email = user.email;
+        const storedOtpData = otps.get(email);
 
-    const token = jwt.sign({ email }, secretKey, { expiresIn: '1h' });
-    otps.delete(email);
-    res.json({ token });
+        if (!storedOtpData || storedOtpData.expiresAt < Date.now() || storedOtpData.otp !== otp) {
+            return res.status(400).send('Invalid or expired OTP.');
+        }
+
+        const token = jwt.sign({ email }, secretKey, { expiresIn: '1h' });
+        otps.delete(email);
+        res.json({ token });
+    });
 };
