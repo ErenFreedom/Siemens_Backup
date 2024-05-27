@@ -7,8 +7,6 @@ const { generateOTP, sendOTPEmail, decryptData } = require('../utils/otpGenerati
 
 const secretKey = process.env.SECRET_KEY;
 
-const otps = new Map(); // To store OTPs temporarily
-
 // Register a new user
 exports.register = async (req, res) => {
     const errors = validationResult(req);
@@ -31,31 +29,51 @@ exports.register = async (req, res) => {
         }
 
         const otp = generateOTP();
-        otps.set(email, { otp, username, password: decryptedPassword, expiresAt: Date.now() + 2 * 60 * 1000 });
-        await sendOTPEmail(email, otp);
+        const expiresAt = new Date(Date.now() + 2 * 60 * 1000); // 2 minutes from now
 
-        res.status(200).send('OTP sent to your email. Complete registration by verifying the OTP.');
+        const insertOtpQuery = 'INSERT INTO otps (email, otp, expires_at) VALUES (?, ?, ?)';
+        db.query(insertOtpQuery, [email, otp, expiresAt], async (err) => {
+            if (err) {
+                console.error('Error storing OTP:', err);
+                return res.status(500).send('Error storing OTP');
+            }
+            await sendOTPEmail(email, otp);
+            res.status(200).send('OTP sent to your email. Complete registration by verifying the OTP.');
+        });
     });
 };
 
 // Verify OTP and complete registration
 exports.verifyRegistration = async (req, res) => {
     const { email, otp } = req.body;
-    const storedOtpData = otps.get(email);
-
-    if (!storedOtpData || storedOtpData.expiresAt < Date.now() || storedOtpData.otp !== otp) {
-        return res.status(400).send('Invalid or expired OTP.');
-    }
-
-    const hashedPassword = await bcrypt.hash(storedOtpData.password, 10);
-    const query = 'INSERT INTO users (email, username, password) VALUES (?, ?, ?)';
-    db.query(query, [email, storedOtpData.username, hashedPassword], (err, results) => {
-        if (err) {
-            console.error('Error registering user:', err);
-            return res.status(500).send('Error registering user');
+    const checkOtpQuery = 'SELECT * FROM otps WHERE email = ? AND otp = ?';
+    db.query(checkOtpQuery, [email, otp], (err, results) => {
+        if (err || results.length === 0) {
+            return res.status(400).send('Invalid or expired OTP.');
         }
-        otps.delete(email);
-        res.send('User registered successfully');
+
+        const otpData = results[0];
+        if (new Date() > new Date(otpData.expires_at)) {
+            return res.status(400).send('Invalid or expired OTP.');
+        }
+
+        const hashedPassword = bcrypt.hashSync(otpData.password, 10);
+        const query = 'INSERT INTO users (email, username, password) VALUES (?, ?, ?)';
+        db.query(query, [email, otpData.username, hashedPassword], (err) => {
+            if (err) {
+                console.error('Error registering user:', err);
+                return res.status(500).send('Error registering user');
+            }
+
+            const deleteOtpQuery = 'DELETE FROM otps WHERE email = ?';
+            db.query(deleteOtpQuery, [email], (err) => {
+                if (err) {
+                    console.error('Error deleting OTP:', err);
+                }
+            });
+
+            res.send('User registered successfully');
+        });
     });
 };
 
@@ -81,10 +99,17 @@ exports.login = (req, res) => {
         }
 
         const otp = generateOTP();
-        otps.set(user.email, { otp, expiresAt: Date.now() + 2 * 60 * 1000 });
-        await sendOTPEmail(user.email, otp);
+        const expiresAt = new Date(Date.now() + 2 * 60 * 1000); // 2 minutes from now
 
-        res.status(200).send('OTP sent to your email. Complete login by verifying the OTP.');
+        const insertOtpQuery = 'INSERT INTO otps (email, otp, expires_at) VALUES (?, ?, ?)';
+        db.query(insertOtpQuery, [user.email, otp, expiresAt], async (err) => {
+            if (err) {
+                console.error('Error storing OTP:', err);
+                return res.status(500).send('Error storing OTP');
+            }
+            await sendOTPEmail(user.email, otp);
+            res.status(200).send('OTP sent to your email. Complete login by verifying the OTP.');
+        });
     });
 };
 
@@ -99,14 +124,27 @@ exports.verifyLogin = async (req, res) => {
 
         const user = results[0];
         const email = user.email;
-        const storedOtpData = otps.get(email);
+        const checkOtpQuery = 'SELECT * FROM otps WHERE email = ? AND otp = ?';
+        db.query(checkOtpQuery, [email, otp], (err, results) => {
+            if (err || results.length === 0) {
+                return res.status(400).send('Invalid or expired OTP.');
+            }
 
-        if (!storedOtpData || storedOtpData.expiresAt < Date.now() || storedOtpData.otp !== otp) {
-            return res.status(400).send('Invalid or expired OTP.');
-        }
+            const otpData = results[0];
+            if (new Date() > new Date(otpData.expires_at)) {
+                return res.status(400).send('Invalid or expired OTP.');
+            }
 
-        const token = jwt.sign({ email }, secretKey, { expiresIn: '1h' });
-        otps.delete(email);
-        res.json({ token });
+            const token = jwt.sign({ email }, secretKey, { expiresIn: '1h' });
+
+            const deleteOtpQuery = 'DELETE FROM otps WHERE email = ?';
+            db.query(deleteOtpQuery, [email], (err) => {
+                if (err) {
+                    console.error('Error deleting OTP:', err);
+                }
+            });
+
+            res.json({ token });
+        });
     });
 };
