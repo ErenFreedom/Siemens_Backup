@@ -9,11 +9,11 @@ function encryptData(data) {
     return CryptoJS.AES.encrypt(data, secretKey).toString();
 }
 
-// Get username and password from command line arguments
-const [,, username, password] = process.argv;
+// Get email, username, and password from command line arguments
+const [,, email, username, password] = process.argv;
 
-if (!username || !password) {
-    console.log('Usage: node generateCurlCommands.js <username> <password>');
+if (!email || !username || !password) {
+    console.log('Usage: node generateCurlCommands.js <email> <username> <password>');
     process.exit(1);
 }
 
@@ -25,15 +25,23 @@ const proxy = '--proxy http://127.0.0.1:8080';
 // Example curl command for registration
 const registerCommand = `curl -X POST https://ec2-3-109-41-79.ap-south-1.compute.amazonaws.com/register \
 -H "Content-Type: application/json" \
--d '{"username": "${username}", "password": "${encryptedPassword}"}' \
+-d '{"email": "${email}", "username": "${username}", "password": "${encryptedPassword}"}' \
 ${proxy} --insecure`;
 
 console.log("Register Command:\n", registerCommand);
 
-// Example curl command for login
-const loginCommand = `curl -X POST https://ec2-3-109-41-79.ap-south-1.compute.amazonaws.com/login \
+// Example curl command for login (with email)
+const loginCommandEmail = `curl -X POST https://ec2-3-109-41-79.ap-south-1.compute.amazonaws.com/login \
+-H "Content-Type: application/json" \
+-d '{"email": "${email}", "password": "${encryptedPassword}"}' \
+${proxy} --insecure`;
+
+console.log("Login Command (with email):\n", loginCommandEmail);
+
+// Example curl command for login (with username)
+const loginCommandUsername = `curl -X POST https://ec2-3-109-41-79.ap-south-1.compute.amazonaws.com/login \
 -H "Content-Type: application/json" \
 -d '{"username": "${username}", "password": "${encryptedPassword}"}' \
 ${proxy} --insecure`;
 
-console.log("Login Command:\n", loginCommand);
+console.log("Login Command (with username):\n", loginCommandUsername);
