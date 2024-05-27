@@ -31,8 +31,8 @@ exports.register = async (req, res) => {
         const otp = generateOTP();
         const expiresAt = new Date(Date.now() + 2 * 60 * 1000); // 2 minutes from now
 
-        const insertOtpQuery = 'INSERT INTO otps (email, otp, expires_at) VALUES (?, ?, ?)';
-        db.query(insertOtpQuery, [email, otp, expiresAt], async (err) => {
+        const insertOtpQuery = 'INSERT INTO otps (email, otp, expires_at, password, username) VALUES (?, ?, ?, ?, ?)';
+        db.query(insertOtpQuery, [email, otp, expiresAt, decryptedPassword, username], async (err) => {
             if (err) {
                 console.error('Error storing OTP:', err);
                 return res.status(500).send('Error storing OTP');
@@ -48,7 +48,7 @@ exports.register = async (req, res) => {
 exports.verifyRegistration = async (req, res) => {
     const { identifier, otp } = req.body;
     const checkOtpQuery = 'SELECT * FROM otps WHERE email = ? AND otp = ?';
-    db.query(checkOtpQuery, [identifier, otp], (err, results) => {
+    db.query(checkOtpQuery, [identifier, otp], async (err, results) => {
         if (err || results.length === 0) {
             console.error(`Invalid or expired OTP for email ${identifier}`);
             return res.status(400).send('Invalid or expired OTP.');
@@ -60,16 +60,16 @@ exports.verifyRegistration = async (req, res) => {
             return res.status(400).send('Invalid or expired OTP.');
         }
 
-        const hashedPassword = bcrypt.hashSync(otpData.password, 10);
+        const hashedPassword = await bcrypt.hash(otpData.password, 10);
         const query = 'INSERT INTO users (email, username, password) VALUES (?, ?, ?)';
-        db.query(query, [email, otpData.username, hashedPassword], (err) => {
+        db.query(query, [identifier, otpData.username, hashedPassword], (err) => {
             if (err) {
                 console.error('Error registering user:', err);
                 return res.status(500).send('Error registering user');
             }
 
             const deleteOtpQuery = 'DELETE FROM otps WHERE email = ?';
-            db.query(deleteOtpQuery, [email], (err) => {
+            db.query(deleteOtpQuery, [identifier], (err) => {
                 if (err) {
                     console.error('Error deleting OTP:', err);
                 }
