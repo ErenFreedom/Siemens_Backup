@@ -1,48 +1,18 @@
 const axios = require('axios');
-const mysql = require('mysql');
+const db = require('../config/db'); // Import the existing database connection
 require('dotenv').config();
-
-const {
-    DB_HOST,
-    DB_USER,
-    DB_PASSWORD,
-    DB_NAME,
-} = process.env;
-
-// MySQL connection
-const db = mysql.createConnection({
-    host: DB_HOST,
-    user: DB_USER,
-    password: DB_PASSWORD,
-    database: DB_NAME,
-});
-
-db.connect((err) => {
-    if (err) {
-        console.error('Error connecting to the database:', err);
-        process.exit(1);
-    } else {
-        console.log('Connected to the database');
-    }
-});
-
-const token = process.argv[2];
-
-if (!token) {
-    console.error('Token is required');
-    process.exit(1);
-}
 
 const getAuthToken = async () => {
     try {
-        const response = await axios.post('https://192.168.22.160/WebServiceApplication/api/token', 
-        'grant_type=password&username=defaultadmin&password=desigo', 
-        {
-            headers: {
-                'Content-Type': 'application/x-www-form-urlencoded'
-            },
-            httpsAgent: new (require('https').Agent)({ rejectUnauthorized: false })
-        });
+        const response = await axios.post('https://192.168.22.160/WebServiceApplication/api/token',
+            'grant_type=password&username=defaultadmin&password=desigo', 
+            {
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded'
+                },
+                httpsAgent: new (require('https').Agent)({ rejectUnauthorized: false })
+            }
+        );
         return response.data.access_token;
     } catch (error) {
         console.error('Error fetching auth token:', error);
