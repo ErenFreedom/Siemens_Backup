@@ -11,7 +11,7 @@ const port = process.env.PORT || 443; // Ensure the port is set to 443 for HTTPS
 
 const authRoutes = require('./routes/authRoutes');
 const dataRoutes = require('./routes/dataRoutes');
-const loggerRoutes = require('./routes/loggerRoutes'); // Add this line
+const loggerRoutes = require('./routes/loggerRoutes');
 
 app.use(bodyParser.json());
 app.use(helmet());
@@ -26,7 +26,7 @@ app.use(limiter);
 // Routes
 app.use(authRoutes);
 app.use(dataRoutes);
-app.use(loggerRoutes); // Add this line
+app.use(loggerRoutes);
 
 // Load SSL/TLS certificates
 const options = {

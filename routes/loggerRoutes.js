@@ -1,7 +1,7 @@
 const express = require('express');
 const jwt = require('jsonwebtoken');
 require('dotenv').config();
-const { startLogging, stopLogging } = require('../dataLogger/logger');
+const { exec } = require('child_process');
 
 const router = express.Router();
 const secretKey = process.env.SECRET_KEY;
@@ -18,14 +18,21 @@ const authenticateToken = (req, res, next) => {
     });
 };
 
+// Start logging data
 router.post('/logger/start', authenticateToken, (req, res) => {
-    const { interval } = req.body;
-    startLogging(interval || 30000); // Default to 30 seconds if no interval is provided
-    res.send('Started logging data.');
+    const token = req.headers['authorization'].split(' ')[1];
+    exec(`node dataLogger/dataLoggerScript.js ${token}`, (err, stdout, stderr) => {
+        if (err) {
+            console.error(`Error starting logger: ${err.message}`);
+            return res.status(500).send('Error starting logger.');
+        }
+        res.send('Started logging data.');
+    });
 });
 
+// Stop logging data (if needed)
 router.post('/logger/stop', authenticateToken, (req, res) => {
-    stopLogging();
+    // Implement a way to stop the data logger script if running in the background
     res.send('Stopped logging data.');
 });
 
