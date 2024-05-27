@@ -15,11 +15,12 @@ const getToken = async () => {
             'grant_type=password&username=' + username + '&password=' + password,
             {
                 headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded'
+                    'Content-Type': 'application/json'
                 },
                 httpsAgent: new (require('https').Agent)({ rejectUnauthorized: false })
             }
         );
+        console.log('Token:', response.data.access_token); // Print the token
         return response.data.access_token; // Adjust if the token key is different
     } catch (error) {
         console.error('Error getting token:', error);
