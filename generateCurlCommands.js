@@ -11,10 +11,10 @@ function encryptData(data) {
     return CryptoJS.AES.encrypt(data, secretKey).toString();
 }
 
-// Get action, email, username, and password from command line arguments
-const [,, action, emailOrUsername, username, password] = process.argv;
+// Get action, email/username, and password from command line arguments
+const [,, action, identifier, password] = process.argv;
 
-if (!action || !emailOrUsername || !password || (action === 'register' && !username)) {
+if (!action || !identifier || !password || (action === 'register' && !username)) {
     console.log('Usage: node generateCurlCommands.js <register|login> <email|username> <username (for register)> <password>');
     process.exit(1);
 }
@@ -53,24 +53,24 @@ function verifyOtp(identifier, endpoint) {
 if (action === 'register') {
     const registerCommand = `curl -X POST https://ec2-3-109-41-79.ap-south-1.compute.amazonaws.com/register \
     -H "Content-Type: application/json" \
-    -d '{"email": "${emailOrUsername}", "username": "${username}", "password": "${encryptedPassword}"}' --insecure`;
+    -d '{"email": "${identifier}", "username": "${username}", "password": "${encryptedPassword}"}' --insecure`;
 
     console.log("Register Command:\n", registerCommand);
     const output = executeCommand(registerCommand);
     console.log(output);
 
-    verifyOtp(emailOrUsername, 'verify-registration');
+    verifyOtp(identifier, 'verify-registration');
 
 } else if (action === 'login') {
     const loginCommand = `curl -X POST https://ec2-3-109-41-79.ap-south-1.compute.amazonaws.com/login \
     -H "Content-Type: application/json" \
-    -d '{"identifier": "${emailOrUsername}", "password": "${encryptedPassword}"}' --insecure`;
+    -d '{"identifier": "${identifier}", "password": "${encryptedPassword}"}' --insecure`;
 
     console.log("Login Command:\n", loginCommand);
     const output = executeCommand(loginCommand);
     console.log(output);
 
-    verifyOtp(emailOrUsername, 'verify-login');
+    verifyOtp(identifier, 'verify-login');
 } else {
     console.log('Invalid action. Use "register" or "login".');
 }
