@@ -19,14 +19,11 @@ if (!email || !username || !password) {
 
 const encryptedPassword = encryptData(password);
 
-// Proxy settings for Burp Suite
-const proxy = '--proxy http://127.0.0.1:8080';
-
 // Example curl command for registration
 const registerCommand = `curl -X POST https://ec2-3-109-41-79.ap-south-1.compute.amazonaws.com/register \
 -H "Content-Type: application/json" \
 -d '{"email": "${email}", "username": "${username}", "password": "${encryptedPassword}"}' \
-${proxy} --insecure`;
+--insecure`;
 
 console.log("Register Command:\n", registerCommand);
 
@@ -34,7 +31,7 @@ console.log("Register Command:\n", registerCommand);
 const loginCommandEmail = `curl -X POST https://ec2-3-109-41-79.ap-south-1.compute.amazonaws.com/login \
 -H "Content-Type: application/json" \
 -d '{"email": "${email}", "password": "${encryptedPassword}"}' \
-${proxy} --insecure`;
+--insecure`;
 
 console.log("Login Command (with email):\n", loginCommandEmail);
 
@@ -42,6 +39,6 @@ console.log("Login Command (with email):\n", loginCommandEmail);
 const loginCommandUsername = `curl -X POST https://ec2-3-109-41-79.ap-south-1.compute.amazonaws.com/login \
 -H "Content-Type: application/json" \
 -d '{"username": "${username}", "password": "${encryptedPassword}"}' \
-${proxy} --insecure`;
+--insecure`;
 
 console.log("Login Command (with username):\n", loginCommandUsername);
