@@ -33,11 +33,28 @@ if (!token) {
     process.exit(1);
 }
 
-const logData = async () => {
+const getAuthToken = async () => {
+    try {
+        const response = await axios.post('https://192.168.22.160/WebServiceApplication/api/token', 
+        'grant_type=password&username=defaultadmin&password=desigo', 
+        {
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded'
+            },
+            httpsAgent: new (require('https').Agent)({ rejectUnauthorized: false })
+        });
+        return response.data.access_token;
+    } catch (error) {
+        console.error('Error fetching auth token:', error);
+        process.exit(1);
+    }
+};
+
+const logData = async (authToken) => {
     try {
         const response = await axios.get('https://192.168.22.160:443/WebServiceApplication/api/values/System1.LogicalView:LogicalView.BACNETNETWORK.B.F1.SA1.plant.T;.Present_Value', {
             headers: {
-                'Authorization': `Bearer ${token}`
+                'Authorization': `Bearer ${authToken}`
             },
             httpsAgent: new (require('https').Agent)({ rejectUnauthorized: false })
         });
@@ -70,8 +87,9 @@ const logData = async () => {
     }
 };
 
-const startLogging = (interval) => {
-    setInterval(logData, interval);
+const startLogging = async (interval) => {
+    const authToken = await getAuthToken();
+    setInterval(() => logData(authToken), interval);
 };
 
 console.log('Starting data logging...');
