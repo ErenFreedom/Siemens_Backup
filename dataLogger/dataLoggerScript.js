@@ -1,11 +1,18 @@
 const axios = require('axios');
-const db = require('../config/db'); // Import the existing database connection
 require('dotenv').config();
 
-const getAuthToken = async () => {
+// Replace these with your actual credentials and URL
+const localServerUrl = 'https://192.168.22.160/WebServiceApplication/api/token';
+const username = 'defaultadmin';
+const password = 'desigo';
+const fetchDataUrl = 'https://192.168.22.160:443/WebServiceApplication/api/values/System1.LogicalView:LogicalView.BACNETNETWORK.B.F1.SA1.plant.T;.Present_Value';
+
+// Function to authenticate and get a token
+const getToken = async () => {
     try {
-        const response = await axios.post('https://192.168.22.160/WebServiceApplication/api/token',
-            'grant_type=password&username=defaultadmin&password=desigo', 
+        const response = await axios.post(
+            localServerUrl,
+            'grant_type=password&username=' + username + '&password=' + password,
             {
                 headers: {
                     'Content-Type': 'application/x-www-form-urlencoded'
@@ -13,54 +20,34 @@ const getAuthToken = async () => {
                 httpsAgent: new (require('https').Agent)({ rejectUnauthorized: false })
             }
         );
-        return response.data.access_token;
+        return response.data.access_token; // Adjust if the token key is different
     } catch (error) {
-        console.error('Error fetching auth token:', error);
+        console.error('Error getting token:', error);
         process.exit(1);
     }
 };
 
-const logData = async (authToken) => {
+// Function to fetch data using the token
+const fetchData = async (token) => {
     try {
-        const response = await axios.get('https://192.168.22.160:443/WebServiceApplication/api/values/System1.LogicalView:LogicalView.BACNETNETWORK.B.F1.SA1.plant.T;.Present_Value', {
+        const response = await axios.get(fetchDataUrl, {
             headers: {
-                'Authorization': `Bearer ${authToken}`
+                'Authorization': `Bearer ${token}`
             },
             httpsAgent: new (require('https').Agent)({ rejectUnauthorized: false })
         });
 
-        const data = response.data;
-
-        const logEntry = {
-            data_type: data.DataType,
-            value: parseFloat(data.Value.Value),
-            quality: data.Value.Quality,
-            quality_good: data.Value.QualityGood,
-            timestamp: new Date(data.Value.Timestamp),
-            original_object_or_property_id: data.OriginalObjectOrPropertyId,
-            object_id: data.ObjectId,
-            property_name: data.PropertyName,
-            attribute_id: data.AttributeId,
-            error_code: data.ErrorCode,
-            is_array: data.IsArray,
-        };
-
-        db.query('INSERT INTO temperature_logs SET ?', logEntry, (err, res) => {
-            if (err) {
-                console.error('Error inserting data into the database:', err);
-            } else {
-                console.log('Data logged successfully at', new Date().toISOString());
-            }
-        });
+        console.log('Fetched data:', response.data);
     } catch (error) {
         console.error('Error fetching data:', error);
     }
 };
 
-const startLogging = async (interval) => {
-    const authToken = await getAuthToken();
-    setInterval(() => logData(authToken), interval);
+// Function to start the data fetching loop
+const startFetchingData = async (interval) => {
+    const token = await getToken();
+    setInterval(() => fetchData(token), interval);
 };
 
-console.log('Starting data logging...');
-startLogging(30000); // Log data every 30 seconds
+console.log('Starting data fetching...');
+startFetchingData(30000); // Fetch data every 30 seconds
