@@ -2,75 +2,77 @@ const axios = require('axios');
 const mysql = require('mysql');
 require('dotenv').config();
 
-// Create a connection to the database
+const {
+    DB_HOST,
+    DB_USER,
+    DB_PASSWORD,
+    DB_NAME,
+} = process.env;
+
+// MySQL connection
 const db = mysql.createConnection({
-    host: process.env.DB_HOST,
-    user: process.env.DB_USER,
-    password: process.env.DB_PASSWORD,
-    database: process.env.DB_NAME
+    host: DB_HOST,
+    user: DB_USER,
+    password: DB_PASSWORD,
+    database: DB_NAME,
 });
 
-// Connect to the database
 db.connect((err) => {
     if (err) {
         console.error('Error connecting to the database:', err);
         process.exit(1);
+    } else {
+        console.log('Connected to the database');
     }
-    console.log('Connected to the database');
 });
 
-// Function to log data to the database
-async function logData(token) {
+const token = process.argv[2];
+
+if (!token) {
+    console.error('Token is required');
+    process.exit(1);
+}
+
+const logData = async () => {
     try {
-        const response = await axios.get('https://192.168.22.160:443/WebServiceApplication/api/values/System1.LogicalView:LogicalView.BACNETNETWORK.B.F1.SA1.plant.AQualR;.Present_Value', {
+        const response = await axios.get('https://192.168.22.160:443/WebServiceApplication/api/values/System1.LogicalView:LogicalView.BACNETNETWORK.B.F1.SA1.plant.T;.Present_Value', {
             headers: {
-                Authorization: `Bearer ${token}`
+                'Authorization': `Bearer ${token}`
             },
-            httpsAgent: new (require('https').Agent)({
-                rejectUnauthorized: false
-            })
+            httpsAgent: new (require('https').Agent)({ rejectUnauthorized: false })
         });
 
         const data = response.data;
-        console.log('Data fetched:', data);
 
-        const query = 'INSERT INTO temperature_logs (data_type, value, quality, quality_good, timestamp, original_object_or_property_id, object_id, property_name, attribute_id, error_code, is_array) VALUES ?';
-        const values = data.map(item => [
-            item.DataType,
-            parseFloat(item.Value.Value),
-            item.Value.Quality,
-            item.Value.QualityGood,
-            new Date(item.Value.Timestamp),
-            item.OriginalObjectOrPropertyId,
-            item.ObjectId,
-            item.PropertyName,
-            item.AttributeId,
-            item.ErrorCode,
-            item.IsArray
-        ]);
+        const logEntry = {
+            data_type: data.DataType,
+            value: parseFloat(data.Value.Value),
+            quality: data.Value.Quality,
+            quality_good: data.Value.QualityGood,
+            timestamp: new Date(data.Value.Timestamp),
+            original_object_or_property_id: data.OriginalObjectOrPropertyId,
+            object_id: data.ObjectId,
+            property_name: data.PropertyName,
+            attribute_id: data.AttributeId,
+            error_code: data.ErrorCode,
+            is_array: data.IsArray,
+        };
 
-        db.query(query, [values], (err, results) => {
+        db.query('INSERT INTO temperature_logs SET ?', logEntry, (err, res) => {
             if (err) {
                 console.error('Error inserting data into the database:', err);
-                return;
+            } else {
+                console.log('Data logged successfully at', new Date().toISOString());
             }
-            console.log('Data inserted into the database:', results);
         });
     } catch (error) {
-        console.error('Error fetching data:', error.message);
+        console.error('Error fetching data:', error);
     }
-}
+};
 
-// Main function to run the data logging
-async function main() {
-    const token = process.argv[2];
-    if (!token) {
-        console.log('Usage: node dataLoggerScript.js <JWT_TOKEN>');
-        process.exit(1);
-    }
+const startLogging = (interval) => {
+    setInterval(logData, interval);
+};
 
-    console.log('Starting data logging...');
-    setInterval(() => logData(token), 30000); // Log data every 30 seconds
-}
-
-main();
+console.log('Starting data logging...');
+startLogging(30000); // Log data every 30 seconds
