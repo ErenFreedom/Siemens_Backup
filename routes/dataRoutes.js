@@ -1,9 +1,9 @@
 const express = require('express');
 const router = express.Router();
+const authenticateToken = require('../middleware/authenticateToken');
 const dataController = require('../controllers/dataController');
-const authenticateToken = require('../middlewares/authenticateToken');
 
-router.post('/data', authenticateToken, dataController.postData);
-router.get('/data', authenticateToken, dataController.getData);
+// Route to receive data
+router.post('/data', authenticateToken, dataController.insertData);
 
 module.exports = router;
