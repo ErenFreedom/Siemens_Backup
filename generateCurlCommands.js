@@ -12,14 +12,22 @@ function encryptData(data) {
 }
 
 // Get action, email/username, and password from command line arguments
-const [,, action, identifier, password] = process.argv;
+const [,, action, identifier, usernameOrPassword, password] = process.argv;
 
-if (!action || !identifier || !password || (action === 'register' && !username)) {
+let identifierValue, username, passwordValue;
+
+if (action === 'register') {
+    [identifierValue, username, passwordValue] = [identifier, usernameOrPassword, password];
+} else if (action === 'login') {
+    [identifierValue, passwordValue] = [identifier, usernameOrPassword];
+}
+
+if (!action || !identifierValue || !passwordValue || (action === 'register' && !username)) {
     console.log('Usage: node generateCurlCommands.js <register|login> <email|username> <username (for register)> <password>');
     process.exit(1);
 }
 
-const encryptedPassword = encryptData(password);
+const encryptedPassword = encryptData(passwordValue);
 
 // Function to execute command and return output
 function executeCommand(command) {
@@ -40,8 +48,8 @@ function verifyOtp(identifier, endpoint) {
 
     rl.question('Enter the OTP sent to your email: ', (otp) => {
         const verifyCommand = `curl -X POST https://ec2-3-109-41-79.ap-south-1.compute.amazonaws.com/${endpoint} \
-        -H "Content-Type: application/json" \
-        -d '{"identifier": "${identifier}", "otp": "${otp}"}' --insecure`;
+-H "Content-Type: application/json" \
+-d '{"identifier": "${identifier}", "otp": "${otp}"}' --insecure`;
 
         console.log(`Verify ${endpoint} Command:\n`, verifyCommand);
         const verifyOutput = executeCommand(verifyCommand);
@@ -53,24 +61,24 @@ function verifyOtp(identifier, endpoint) {
 if (action === 'register') {
     const registerCommand = `curl -X POST https://ec2-3-109-41-79.ap-south-1.compute.amazonaws.com/register \
     -H "Content-Type: application/json" \
-    -d '{"email": "${identifier}", "username": "${username}", "password": "${encryptedPassword}"}' --insecure`;
+    -d '{"email": "${identifierValue}", "username": "${username}", "password": "${encryptedPassword}"}' --insecure`;
 
     console.log("Register Command:\n", registerCommand);
     const output = executeCommand(registerCommand);
     console.log(output);
 
-    verifyOtp(identifier, 'verify-registration');
+    verifyOtp(identifierValue, 'verify-registration');
 
 } else if (action === 'login') {
     const loginCommand = `curl -X POST https://ec2-3-109-41-79.ap-south-1.compute.amazonaws.com/login \
     -H "Content-Type: application/json" \
-    -d '{"identifier": "${identifier}", "password": "${encryptedPassword}"}' --insecure`;
+    -d '{"identifier": "${identifierValue}", "password": "${encryptedPassword}"}' --insecure`;
 
     console.log("Login Command:\n", loginCommand);
     const output = executeCommand(loginCommand);
     console.log(output);
 
-    verifyOtp(identifier, 'verify-login');
+    verifyOtp(identifierValue, 'verify-login');
 } else {
     console.log('Invalid action. Use "register" or "login".');
 }
