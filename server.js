@@ -25,7 +25,7 @@ app.use(limiter);
 
 // Routes
 app.use(authRoutes);
-app.use(dataRoutes);
+app.use('/api', dataRoutes);
 app.use(loggerRoutes);
 
 // Load SSL/TLS certificates
