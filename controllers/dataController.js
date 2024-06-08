@@ -3,6 +3,7 @@ const db = require('../config/db');
 // Controller function to handle data insertion
 exports.insertData = (req, res) => {
     const data = req.body;
+    console.log('Inserting data:', data); // Debugging statement
     const query = 'INSERT INTO fetched_data (type, value, quality, qualityGood, timestamp, originalObjectOrPropertyId, objectId, propertyName, attributeId, errorCode, isArray) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)';
     const values = [
         data.type,
