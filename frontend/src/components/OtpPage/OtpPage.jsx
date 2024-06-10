@@ -43,12 +43,12 @@ const OtpPage = () => {
         <div className="logo-container">
           <img src={logo} className="logo" alt="Platform Logo" />
         </div>
-        <h1>Please verify</h1>
+        <h1> Verification Needed. . .</h1>
       </div>
       <div className="otp-content">
         <img src={otpImage} alt="OTP Verification" className="otp-image" />
         <h2>Verification Code</h2>
-        <p>OTP has been sent to your mobile number. Please verify</p>
+        <p>A six digit OTP has been sent to your registered email id. Please verify</p>
         <div className="otp-inputs">
           {otp.map((data, index) => (
             <input
