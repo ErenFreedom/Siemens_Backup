@@ -2,12 +2,10 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
-const https = require('https');
-const fs = require('fs');
 require('dotenv').config();
 
 const app = express();
-const port = process.env.PORT || 443; // Ensure the port is set to 443 for HTTPS
+const port = process.env.PORT || 3000; // Changed to a non-privileged port
 
 const authRoutes = require('./routes/authRoutes');
 const dataRoutes = require('./routes/dataRoutes');
@@ -38,13 +36,7 @@ app.use('/api', graphRoutes); // Adding the new route for graph data
 app.use('/api', accountRoutes); // Adding the new route for account management
 app.use('/api', notificationRoutes); // Adding the new route for notifications
 
-// Load SSL/TLS certificates
-const options = {
-    key: fs.readFileSync('./key.pem'), 
-    cert: fs.readFileSync('./cert.pem') 
-};
-
-// Create HTTPS server
-https.createServer(options, app).listen(port, () => {
+// Start the server
+app.listen(port, () => {
     console.log(`Server is running on port ${port}`);
 });
