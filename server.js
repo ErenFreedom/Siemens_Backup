@@ -5,7 +5,7 @@ const rateLimit = require('express-rate-limit');
 require('dotenv').config();
 
 const app = express();
-const port = process.env.PORT || 3000; // Changed to a non-privileged port
+const port = process.env.PORT || 3000; // Ensure the port is set to 3000 for non-privileged port
 
 const authRoutes = require('./routes/authRoutes');
 const dataRoutes = require('./routes/dataRoutes');
