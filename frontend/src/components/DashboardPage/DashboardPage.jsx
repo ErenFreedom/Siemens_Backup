@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import jwtDecode from 'jwt-decode';
+import jwt_decode from 'jwt-decode'; // Import using named imports
+
 import DashboardHeader from '../DashboardHeader/DashboardHeader';
 import './DashboardPage.css';
 
