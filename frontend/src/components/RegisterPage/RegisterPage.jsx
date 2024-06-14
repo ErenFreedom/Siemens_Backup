@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom'; // Add useNavigate hook
 import axios from 'axios';
 import './RegisterPage.css';
 import logo from '../../assets/logo.png'; // Ensure the path to the logo is correct
@@ -12,6 +13,7 @@ const RegisterPage = () => {
   const [formData, setFormData] = useState({ username: '', email: '', password: '' });
   const [error, setError] = useState('');
   const [message, setMessage] = useState('');
+  const navigate = useNavigate(); // Initialize useNavigate
 
   useEffect(() => {
     document.body.classList.add('register-page-body');
@@ -38,6 +40,7 @@ const RegisterPage = () => {
     try {
       const response = await axios.post(`${process.env.REACT_APP_API_URL}/register`, formData);
       setMessage(response.data);
+      navigate('/otp'); // Navigate to OTP page upon successful registration
     } catch (error) {
       setError(error.response?.data || 'An error occurred');
     }
