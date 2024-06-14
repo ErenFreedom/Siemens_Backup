@@ -46,30 +46,30 @@ exports.register = async (req, res) => {
 
 // Verify OTP and complete registration
 exports.verifyRegistration = async (req, res) => {
-    const { identifier, otp } = req.body;
+    const { email, otp } = req.body;
     const checkOtpQuery = 'SELECT * FROM otps WHERE email = ? AND otp = ?';
-    db.query(checkOtpQuery, [identifier, otp], async (err, results) => {
+    db.query(checkOtpQuery, [email, otp], async (err, results) => {
         if (err || results.length === 0) {
-            console.error(`Invalid or expired OTP for email ${identifier}`);
+            console.error(`Invalid or expired OTP for email ${email}`);
             return res.status(400).send('Invalid or expired OTP.');
         }
 
         const otpData = results[0];
         if (new Date() > new Date(otpData.expires_at)) {
-            console.error(`Expired OTP for email ${identifier}`);
+            console.error(`Expired OTP for email ${email}`);
             return res.status(400).send('Invalid or expired OTP.');
         }
 
         const hashedPassword = await bcrypt.hash(otpData.password, 10);
         const query = 'INSERT INTO users (email, username, password) VALUES (?, ?, ?)';
-        db.query(query, [identifier, otpData.username, hashedPassword], (err) => {
+        db.query(query, [email, otpData.username, hashedPassword], (err) => {
             if (err) {
                 console.error('Error registering user:', err);
                 return res.status(500).send('Error registering user');
             }
 
             const deleteOtpQuery = 'DELETE FROM otps WHERE email = ?';
-            db.query(deleteOtpQuery, [identifier], (err) => {
+            db.query(deleteOtpQuery, [email], (err) => {
                 if (err) {
                     console.error('Error deleting OTP:', err);
                 }
@@ -119,38 +119,29 @@ exports.login = (req, res) => {
 
 // Verify OTP and complete login
 exports.verifyLogin = async (req, res) => {
-    const { identifier, otp } = req.body;
-    const query = 'SELECT * FROM users WHERE email = ? OR username = ?';
-    db.query(query, [identifier, identifier], (err, results) => {
+    const { email, otp } = req.body;
+    const checkOtpQuery = 'SELECT * FROM otps WHERE email = ? AND otp = ?';
+    db.query(checkOtpQuery, [email, otp], (err, results) => {
         if (err || results.length === 0) {
-            return res.status(400).send('Invalid identifier.');
+            console.error(`Invalid or expired OTP for email ${email}`);
+            return res.status(400).send('Invalid or expired OTP.');
         }
 
-        const user = results[0];
-        const email = user.email;
-        const checkOtpQuery = 'SELECT * FROM otps WHERE email = ? AND otp = ?';
-        db.query(checkOtpQuery, [email, otp], (err, results) => {
-            if (err || results.length === 0) {
-                console.error(`Invalid or expired OTP for email ${email}`);
-                return res.status(400).send('Invalid or expired OTP.');
+        const otpData = results[0];
+        if (new Date() > new Date(otpData.expires_at)) {
+            console.error(`Expired OTP for email ${email}`);
+            return res.status(400).send('Invalid or expired OTP.');
+        }
+
+        const token = jwt.sign({ email }, secretKey, { expiresIn: '1h' });
+
+        const deleteOtpQuery = 'DELETE FROM otps WHERE email = ?';
+        db.query(deleteOtpQuery, [email], (err) => {
+            if (err) {
+                console.error('Error deleting OTP:', err);
             }
-
-            const otpData = results[0];
-            if (new Date() > new Date(otpData.expires_at)) {
-                console.error(`Expired OTP for email ${email}`);
-                return res.status(400).send('Invalid or expired OTP.');
-            }
-
-            const token = jwt.sign({ email }, secretKey, { expiresIn: '1h' });
-
-            const deleteOtpQuery = 'DELETE FROM otps WHERE email = ?';
-            db.query(deleteOtpQuery, [email], (err) => {
-                if (err) {
-                    console.error('Error deleting OTP:', err);
-                }
-            });
-
-            res.json({ token });
         });
+
+        res.json({ token });
     });
 };

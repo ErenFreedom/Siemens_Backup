@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import './OtpPage.css';
 import logo from '../../assets/logo.png';
@@ -7,10 +7,12 @@ import otpImage from '../../assets/otpimage.png';
 
 const OtpPage = () => {
   const [otp, setOtp] = useState(new Array(6).fill(""));
-  const [timeLeft, setTimeLeft] = useState(120);
+  const [timeLeft, setTimeLeft] = useState(120); // 2 minutes in seconds
   const [error, setError] = useState('');
   const [message, setMessage] = useState('');
+  const location = useLocation();
   const navigate = useNavigate();
+  const email = location.state?.email;
 
   useEffect(() => {
     document.body.classList.add('otp-page-body');
@@ -40,18 +42,16 @@ const OtpPage = () => {
   const handleResend = () => {
     setTimeLeft(120);
     setOtp(new Array(6).fill(""));
+    // Add resend OTP logic here
   };
 
-  const handleSubmit = async () => {
-    setError('');
-    setMessage('');
-    const otpCode = otp.join('');
+  const handleVerify = async () => {
     try {
-      const response = await axios.post(`${process.env.REACT_APP_API_URL}/verify-registration`, { otp: otpCode });
+      const response = await axios.post(`${process.env.REACT_APP_API_URL}/verify-registration`, { email, otp: otp.join('') });
       setMessage(response.data);
-      navigate('/login'); // Redirect to login page upon successful verification
+      navigate('/login'); // Navigate to the login page on successful OTP verification
     } catch (error) {
-      setError(error.response?.data || 'An error occurred');
+      setError(error.response?.data || 'Invalid or expired OTP');
     }
   };
 
@@ -61,7 +61,7 @@ const OtpPage = () => {
         <div className="logo-container">
           <img src={logo} className="logo" alt="Platform Logo" />
         </div>
-        <h1>Verification Needed...</h1>
+        <h1> Verification Needed. . .</h1>
       </div>
       <div className="otp-content">
         <img src={otpImage} alt="OTP Verification" className="otp-image" />
@@ -87,7 +87,7 @@ const OtpPage = () => {
             Resend OTP
           </p>
         )}
-        <button type="button" className="verify-button" onClick={handleSubmit}>VERIFY</button>
+        <button type="button" className="verify-button" onClick={handleVerify}>VERIFY</button>
         {error && <p className="error">{error}</p>}
         {message && <p className="message">{message}</p>}
       </div>

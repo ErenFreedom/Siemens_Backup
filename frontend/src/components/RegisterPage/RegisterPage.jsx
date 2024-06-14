@@ -9,7 +9,7 @@ import thirdImage from '../../assets/image3.jpg';
 
 const RegisterPage = () => {
   const images = [firstImage, secondImage, thirdImage];
-  const [currentImage, setCurrentImage] = React.useState(0);
+  const [currentImage, setCurrentImage] = useState(0);
   const [formData, setFormData] = useState({ username: '', email: '', password: '' });
   const [error, setError] = useState('');
   const [message, setMessage] = useState('');
@@ -40,7 +40,7 @@ const RegisterPage = () => {
     try {
       const response = await axios.post(`${process.env.REACT_APP_API_URL}/register`, formData);
       setMessage(response.data);
-      navigate('/otp'); // Navigate to the OTP page on successful registration
+      navigate('/otp', { state: { email: formData.email } }); // Navigate to the OTP page on successful registration
     } catch (error) {
       setError(error.response?.data || 'An error occurred');
     }
