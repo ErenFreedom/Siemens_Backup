@@ -13,6 +13,8 @@ const OtpPage = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const email = location.state?.email;
+  const otpType = location.state?.otpType;
+  const userId = location.state?.userId;
 
   useEffect(() => {
     document.body.classList.add('otp-page-body');
@@ -47,9 +49,16 @@ const OtpPage = () => {
 
   const handleVerify = async () => {
     try {
-      const response = await axios.post(`${process.env.REACT_APP_API_URL}/verify-registration`, { email, otp: otp.join('') });
-      setMessage(response.data);
-      navigate('/login'); // Navigate to the login page on successful OTP verification
+      if (otpType === 'registration') {
+        const response = await axios.post(`${process.env.REACT_APP_API_URL}/verify-registration`, { email, otp: otp.join('') });
+        setMessage(response.data);
+        navigate('/login'); // Navigate to the login page on successful OTP verification
+      } else if (otpType === 'login') {
+        const response = await axios.post(`${process.env.REACT_APP_API_URL}/verify-login`, { email, otp: otp.join('') });
+        const { token } = response.data;
+        localStorage.setItem('authToken', token); // Store token in localStorage
+        navigate(`/dashboard/${userId}`); // Navigate to the user's dashboard on successful OTP verification
+      }
     } catch (error) {
       setError(error.response?.data || 'Invalid or expired OTP');
     }
@@ -61,12 +70,12 @@ const OtpPage = () => {
         <div className="logo-container">
           <img src={logo} className="logo" alt="Platform Logo" />
         </div>
-        <h1> Verification Needed. . .</h1>
+        <h1> Verification Needed...</h1>
       </div>
       <div className="otp-content">
         <img src={otpImage} alt="OTP Verification" className="otp-image" />
         <h2>Verification Code</h2>
-        <p>A six digit OTP has been sent to your registered email id. Please verify</p>
+        <p>A six-digit OTP has been sent to your registered email. Please verify.</p>
         <div className="otp-inputs">
           {otp.map((data, index) => (
             <input

@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
+import jwtDecode from 'jwt-decode';
 import DashboardHeader from '../DashboardHeader/DashboardHeader';
 import './DashboardPage.css';
 
@@ -12,6 +13,13 @@ const DashboardPage = () => {
   const [humidityData, setHumidityData] = useState({ value: '', updatedAt: '' });
 
   useEffect(() => {
+    const token = localStorage.getItem('authToken');
+    if (token) {
+      const decodedToken = jwtDecode(token);
+      const userId = decodedToken.userId;
+      // Use userId for further API calls
+    }
+
     // Function to fetch user details
     const fetchUserDetails = async () => {
       try {

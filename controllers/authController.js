@@ -112,7 +112,7 @@ exports.login = (req, res) => {
             }
             console.log(`OTP ${otp} stored for email ${user.email}`);
             await sendOTPEmail(user.email, otp);
-            res.status(200).send('OTP sent to your email. Complete login by verifying the OTP.');
+            res.status(200).json({ email: user.email, userId: user.id }); // Return email and userId
         });
     });
 };
@@ -120,28 +120,36 @@ exports.login = (req, res) => {
 // Verify OTP and complete login
 exports.verifyLogin = async (req, res) => {
     const { email, otp } = req.body;
-    const checkOtpQuery = 'SELECT * FROM otps WHERE email = ? AND otp = ?';
-    db.query(checkOtpQuery, [email, otp], (err, results) => {
+    const query = 'SELECT * FROM users WHERE email = ?';
+    db.query(query, [email], (err, results) => {
         if (err || results.length === 0) {
-            console.error(`Invalid or expired OTP for email ${email}`);
-            return res.status(400).send('Invalid or expired OTP.');
+            return res.status(400).send('Invalid identifier.');
         }
 
-        const otpData = results[0];
-        if (new Date() > new Date(otpData.expires_at)) {
-            console.error(`Expired OTP for email ${email}`);
-            return res.status(400).send('Invalid or expired OTP.');
-        }
-
-        const token = jwt.sign({ email }, secretKey, { expiresIn: '1h' });
-
-        const deleteOtpQuery = 'DELETE FROM otps WHERE email = ?';
-        db.query(deleteOtpQuery, [email], (err) => {
-            if (err) {
-                console.error('Error deleting OTP:', err);
+        const user = results[0];
+        const checkOtpQuery = 'SELECT * FROM otps WHERE email = ? AND otp = ?';
+        db.query(checkOtpQuery, [email, otp], (err, results) => {
+            if (err || results.length === 0) {
+                console.error(`Invalid or expired OTP for email ${email}`);
+                return res.status(400).send('Invalid or expired OTP.');
             }
-        });
 
-        res.json({ token });
+            const otpData = results[0];
+            if (new Date() > new Date(otpData.expires_at)) {
+                console.error(`Expired OTP for email ${email}`);
+                return res.status(400).send('Invalid or expired OTP.');
+            }
+
+            const token = jwt.sign({ email: user.email, userId: user.id }, secretKey, { expiresIn: '1h' });
+
+            const deleteOtpQuery = 'DELETE FROM otps WHERE email = ?';
+            db.query(deleteOtpQuery, [email], (err) => {
+                if (err) {
+                    console.error('Error deleting OTP:', err);
+                }
+            });
+
+            res.json({ token });
+        });
     });
 };
