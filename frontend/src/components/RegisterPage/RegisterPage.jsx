@@ -1,11 +1,11 @@
 import React, { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom'; // Add useNavigate hook
 import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
 import './RegisterPage.css';
-import logo from '../../assets/logo.png'; // Ensure the path to the logo is correct
-import firstImage from '../../assets/image1.jpg'; // Update with actual image paths
-import secondImage from '../../assets/image2.jpg'; // Update with actual image paths
-import thirdImage from '../../assets/image3.jpg'; // Update with actual image paths
+import logo from '../../assets/logo.png';
+import firstImage from '../../assets/image1.jpg';
+import secondImage from '../../assets/image2.jpg';
+import thirdImage from '../../assets/image3.jpg';
 
 const RegisterPage = () => {
   const images = [firstImage, secondImage, thirdImage];
@@ -13,7 +13,7 @@ const RegisterPage = () => {
   const [formData, setFormData] = useState({ username: '', email: '', password: '' });
   const [error, setError] = useState('');
   const [message, setMessage] = useState('');
-  const navigate = useNavigate(); // Initialize useNavigate
+  const navigate = useNavigate();
 
   useEffect(() => {
     document.body.classList.add('register-page-body');
@@ -40,7 +40,7 @@ const RegisterPage = () => {
     try {
       const response = await axios.post(`${process.env.REACT_APP_API_URL}/register`, formData);
       setMessage(response.data);
-      navigate('/otp'); // Navigate to OTP page upon successful registration
+      navigate('/otp'); // Navigate to the OTP page on successful registration
     } catch (error) {
       setError(error.response?.data || 'An error occurred');
     }

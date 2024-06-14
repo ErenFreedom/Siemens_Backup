@@ -5,8 +5,7 @@ const rateLimit = require('express-rate-limit');
 require('dotenv').config();
 
 const app = express();
-const port = process.env.PORT || 3001; // Ensure the port is set to 3001
-
+const port = process.env.PORT || 3001;
 
 const authRoutes = require('./routes/authRoutes');
 const dataRoutes = require('./routes/dataRoutes');
@@ -28,9 +27,9 @@ const limiter = rateLimit({
 app.use(limiter);
 
 // Routes
-app.use(authRoutes);
+app.use('/api', authRoutes);
 app.use('/api', dataRoutes); // Ensure this is protected with token verification
-app.use(loggerRoutes);
+app.use('/api', loggerRoutes);
 app.use('/api', latestDataRoutes); // Adding the new route for latest data
 app.use('/api', reportRoutes); // Adding the new route for report generation
 app.use('/api', graphRoutes); // Adding the new route for graph data
