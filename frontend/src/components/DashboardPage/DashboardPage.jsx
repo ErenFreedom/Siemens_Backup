@@ -1,135 +1,63 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { jwtDecode } from 'jwt-decode'; // Correct import for jwt-decode
-import io from 'socket.io-client';
+import { useDispatch, useSelector } from 'react-redux';
+import { fetchData } from '../../actions/dataActions';
 import DashboardHeader from '../DashboardHeader/DashboardHeader';
 import './DashboardPage.css';
 
 const DashboardPage = () => {
   const { userId } = useParams();
-  const [username, setUsername] = useState('');
-  const [temperatureData, setTemperatureData] = useState({ value: '', updatedAt: '' });
-  const [pressureData, setPressureData] = useState({ value: '', updatedAt: '' });
-  const [rhData, setRhData] = useState({ value: '', updatedAt: '' });
-  const [humidityData, setHumidityData] = useState({ value: '', updatedAt: '' });
-  const socket = io(process.env.REACT_APP_API_URL); // Adjust according to your server URL
+  const dispatch = useDispatch();
+  const data = useSelector((state) => state.data.data);
+  const error = useSelector((state) => state.data.error);
 
   useEffect(() => {
     const token = localStorage.getItem('authToken');
-    if (!token) {
-      console.error('No token found');
-      return;
+    if (token) {
+      dispatch(fetchData({ url: `${process.env.REACT_APP_API_URL}/latest`, token }));
     }
-
-    let decodedToken;
-    try {
-      decodedToken = jwtDecode(token);
-    } catch (e) {
-      console.error('Invalid token:', e);
-      return;
-    }
-
-    // Function to fetch user details
-    const fetchUserDetails = async () => {
-      try {
-        const response = await fetch(`${process.env.REACT_APP_API_URL}/user/${userId}`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
-        if (!response.ok) {
-          throw new Error(`Network response was not ok: ${response.statusText}`);
-        }
-        const data = await response.json();
-        setUsername(data.username);
-      } catch (error) {
-        console.error('Error fetching user details:', error.message);
-      }
-    };
-
-    // Function to fetch the latest data
-    const fetchLatestData = async () => {
-      try {
-        const response = await fetch(`${process.env.REACT_APP_API_URL}/latest`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
-        if (!response.ok) {
-          throw new Error(`Network response was not ok: ${response.statusText}`);
-        }
-        const data = await response.json();
-        setTemperatureData({ value: data.temp.value, updatedAt: data.temp.timestamp });
-        setPressureData({ value: data.pressure.value, updatedAt: data.pressure.timestamp });
-        setRhData({ value: data.rh.value, updatedAt: data.rh.timestamp });
-        setHumidityData({ value: data.humidity.value, updatedAt: data.humidity.timestamp });
-      } catch (error) {
-        console.error('Error fetching latest data:', error.message);
-      }
-    };
-
-    fetchUserDetails();
-    fetchLatestData();
-
-    // Listen for real-time updates
-    socket.on('data_update', (update) => {
-      const { table, data } = update;
-      switch (table) {
-        case 'temp':
-          setTemperatureData({ value: data.value, updatedAt: data.timestamp });
-          break;
-        case 'pressure':
-          setPressureData({ value: data.value, updatedAt: data.timestamp });
-          break;
-        case 'rh':
-          setRhData({ value: data.value, updatedAt: data.timestamp });
-          break;
-        case 'humidity':
-          setHumidityData({ value: data.value, updatedAt: data.timestamp });
-          break;
-        default:
-          break;
-      }
-    });
-
-    return () => {
-      socket.disconnect();
-    };
-  }, [userId]);
+  }, [dispatch]);
 
   return (
     <div className="dashboard-page-container">
       <DashboardHeader />
       <div className="welcome-container">
-        <h2 className="welcome-message">Welcome to your dashboard, {username}</h2>
+        <h2 className="welcome-message">Welcome to your dashboard, User {userId}</h2>
       </div>
       <div className="dashboard-page">
         <div className="dashboard-content">
           <div className="rectangles">
-            <Link to={`/temperature/${userId}`} className="rectangle-link">
-              <div className="rectangle">
-                <p>Current Temperature: {temperatureData.value}</p>
-                <p>Updated At: {temperatureData.updatedAt}</p>
-              </div>
-            </Link>
-            <Link to={`/pressure/${userId}`} className="rectangle-link">
-              <div className="rectangle">
-                <p>Current Pressure: {pressureData.value}</p>
-                <p>Updated At: {pressureData.updatedAt}</p>
-              </div>
-            </Link>
-            <Link to={`/rh/${userId}`} className="rectangle-link">
-              <div className="rectangle">
-                <p>Current Rh: {rhData.value}</p>
-                <p>Updated At: {rhData.updatedAt}</p>
-              </div>
-            </Link>
-            <Link to={`/humidity/${userId}`} className="rectangle-link">
-              <div className="rectangle">
-                <p>Current Humidity: {humidityData.value}</p>
-                <p>Updated At: {humidityData.updatedAt}</p>
-              </div>
-            </Link>
+            {error && <p className="error">{error}</p>}
+            {data ? (
+              <>
+                <Link to={`/temperature/${userId}`} className="rectangle-link">
+                  <div className="rectangle">
+                    <p>Current Temperature: {data.temp?.value}</p>
+                    <p>Updated At: {data.temp?.timestamp}</p>
+                  </div>
+                </Link>
+                <Link to={`/pressure/${userId}`} className="rectangle-link">
+                  <div className="rectangle">
+                    <p>Current Pressure: {data.pressure?.value}</p>
+                    <p>Updated At: {data.pressure?.timestamp}</p>
+                  </div>
+                </Link>
+                <Link to={`/rh/${userId}`} className="rectangle-link">
+                  <div className="rectangle">
+                    <p>Current Rh: {data.rh?.value}</p>
+                    <p>Updated At: {data.rh?.timestamp}</p>
+                  </div>
+                </Link>
+                <Link to={`/humidity/${userId}`} className="rectangle-link">
+                  <div className="rectangle">
+                    <p>Current Humidity: {data.humidity?.value}</p>
+                    <p>Updated At: {data.humidity?.timestamp}</p>
+                  </div>
+                </Link>
+              </>
+            ) : (
+              <p>Loading data...</p>
+            )}
           </div>
         </div>
       </div>

@@ -52,12 +52,12 @@ const OtpPage = () => {
       if (otpType === 'registration') {
         const response = await axios.post(`${process.env.REACT_APP_API_URL}/verify-registration`, { email, otp: otp.join('') });
         setMessage(response.data);
-        navigate('/login'); // Navigate to the login page on successful OTP verification
+        navigate('/login');
       } else if (otpType === 'login') {
         const response = await axios.post(`${process.env.REACT_APP_API_URL}/verify-login`, { email, otp: otp.join('') });
         const { token } = response.data;
-        localStorage.setItem('authToken', token); // Store token in localStorage
-        navigate(`/dashboard/${userId}`); // Navigate to the user's dashboard on successful OTP verification
+        localStorage.setItem('authToken', token);
+        navigate(`/dashboard/${userId}`);
       }
     } catch (error) {
       setError(error.response?.data || 'Invalid or expired OTP');
@@ -70,7 +70,7 @@ const OtpPage = () => {
         <div className="logo-container">
           <img src={logo} className="logo" alt="Platform Logo" />
         </div>
-        <h1> Verification Needed...</h1>
+        <h1>Verification Needed...</h1>
       </div>
       <div className="otp-content">
         <img src={otpImage} alt="OTP Verification" className="otp-image" />

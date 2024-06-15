@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import './LoginPage.css';
 import logo from '../../assets/logo.png';
 import loginGif from '../../assets/login.gif';
