@@ -20,11 +20,13 @@ const DashboardPage = () => {
       const decodedToken = jwtDecode(token);
       const userId = decodedToken.userId;
       // Use userId for further API calls
+      console.log('User ID from token:', userId);
     }
 
     // Function to fetch user details
     const fetchUserDetails = async () => {
       try {
+        console.log('Fetching user details for user ID:', userId);
         const response = await fetch(`/api/user/${userId}`);
         if (!response.ok) {
           throw new Error('Network response was not ok');
@@ -39,7 +41,8 @@ const DashboardPage = () => {
     // Function to fetch the latest data
     const fetchLatestData = async () => {
       try {
-        const response = await fetch('/api/latest', {
+        console.log('Fetching latest data with token:', token);
+        const response = await fetch(`${process.env.REACT_APP_API_URL}/api/latest`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },
@@ -48,6 +51,7 @@ const DashboardPage = () => {
           throw new Error('Network response was not ok');
         }
         const data = await response.json();
+        console.log('Latest data received:', data);
         setTemperatureData({ value: data.temp.value, updatedAt: data.temp.timestamp });
         setPressureData({ value: data.pressure.value, updatedAt: data.pressure.timestamp });
         setRhData({ value: data.rh.value, updatedAt: data.rh.timestamp });
@@ -62,6 +66,7 @@ const DashboardPage = () => {
 
     // Listen for real-time updates
     socket.on('data_update', (update) => {
+      console.log('Data update received:', update);
       const { table, data } = update;
       switch (table) {
         case 'temp':
