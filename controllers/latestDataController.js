@@ -1,4 +1,5 @@
 const db = require('../config/db');
+const io = require('../server'); // Import io from server.js
 const { createNotification } = require('./notificationController');
 
 // Controller function to get the latest data from all tables
@@ -19,6 +20,9 @@ exports.getLatestData = (req, res) => {
                 if (completedRequests === tables.length) {
                     res.status(200).json(latestData);
                 }
+
+                // Emit event to all clients
+                io.emit('data_update', { table, data: results[0] });
 
                 // Create a notification for new data insertion
                 const userId = req.user.id; // Assuming you have user ID from the request

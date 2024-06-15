@@ -2,10 +2,15 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
+const http = require('http');
+const socketIo = require('socket.io');
 require('dotenv').config();
 
 const app = express();
-const port = process.env.PORT || 3001;
+const port = process.env.PORT || 3001; // Ensure the port is set to 3001
+
+const server = http.createServer(app);
+const io = socketIo(server);
 
 const authRoutes = require('./routes/authRoutes');
 const dataRoutes = require('./routes/dataRoutes');
@@ -27,16 +32,27 @@ const limiter = rateLimit({
 app.use(limiter);
 
 // Routes
-app.use('/api', authRoutes);
+app.use(authRoutes);
 app.use('/api', dataRoutes); // Ensure this is protected with token verification
-app.use('/api', loggerRoutes);
+app.use(loggerRoutes);
 app.use('/api', latestDataRoutes); // Adding the new route for latest data
 app.use('/api', reportRoutes); // Adding the new route for report generation
 app.use('/api', graphRoutes); // Adding the new route for graph data
 app.use('/api', accountRoutes); // Adding the new route for account management
 app.use('/api', notificationRoutes); // Adding the new route for notifications
 
+// Socket.io connection
+io.on('connection', (socket) => {
+    console.log('New client connected');
+    socket.on('disconnect', () => {
+        console.log('Client disconnected');
+    });
+});
+
+// Export io for other modules
+module.exports = io;
+
 // Start the server
-app.listen(port, () => {
+server.listen(port, () => {
     console.log(`Server is running on port ${port}`);
 });
