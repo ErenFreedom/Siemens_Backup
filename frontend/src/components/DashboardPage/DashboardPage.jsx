@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import jwtDecode from 'jwt-decode'; // Import the default export
+import jwtDecode from 'jwt-decode'; // Correct import for jwt-decode
 import io from 'socket.io-client';
 import DashboardHeader from '../DashboardHeader/DashboardHeader';
 import './DashboardPage.css';
