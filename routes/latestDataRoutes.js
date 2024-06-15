@@ -7,3 +7,4 @@ const latestDataController = require('../controllers/latestDataController');
 router.get('/latest', latestDataController.getLatestData); // Temporarily remove authenticateToken for testing
 
 module.exports = router;
+    

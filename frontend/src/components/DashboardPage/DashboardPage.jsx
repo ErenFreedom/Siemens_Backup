@@ -25,7 +25,7 @@ const DashboardPage = () => {
     // Function to fetch user details
     const fetchUserDetails = async () => {
       try {
-        const response = await fetch(`/api/user/${userId}`);
+        const response = await fetch(`${process.env.REACT_APP_API_URL}/user/${userId}`);
         if (!response.ok) {
           throw new Error('Network response was not ok');
         }
@@ -40,7 +40,7 @@ const DashboardPage = () => {
     // Function to fetch the latest data
     const fetchLatestData = async () => {
       try {
-        const response = await fetch(`${process.env.REACT_APP_API_URL}/api/latest`, {
+        const response = await fetch(`${process.env.REACT_APP_API_URL}/latest`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },
