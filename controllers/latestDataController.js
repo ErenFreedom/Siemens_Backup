@@ -1,6 +1,6 @@
 const db = require('../config/db');
-const io = require('../server'); // Import io from server.js
 const { createNotification } = require('./notificationController');
+const io = require('../server');
 
 // Controller function to get the latest data from all tables
 exports.getLatestData = (req, res) => {
@@ -15,14 +15,17 @@ exports.getLatestData = (req, res) => {
                 console.error(`Error fetching latest data from MySQL table ${table}:`, err);
                 return res.status(500).send(`Error fetching latest data from ${table}`);
             } else {
-                latestData[table] = results[0];
+                latestData[table] = {
+                    value: results[0].value,
+                    timestamp: results[0].timestamp
+                };
                 completedRequests++;
                 if (completedRequests === tables.length) {
                     res.status(200).json(latestData);
                 }
 
-                // Emit event to all clients
-                io.emit('data_update', { table, data: results[0] });
+                // Emit the new data through socket.io
+                io.emit('data_update', { table, data: latestData[table] });
 
                 // Create a notification for new data insertion
                 const userId = req.user.id; // Assuming you have user ID from the request

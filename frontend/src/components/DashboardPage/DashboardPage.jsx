@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { jwtDecode } from 'jwt-decode'; // Named import for jwt-decode
+import jwtDecode from 'jwt-decode'; // Import the default export
 import io from 'socket.io-client';
 import DashboardHeader from '../DashboardHeader/DashboardHeader';
 import './DashboardPage.css';
@@ -42,10 +42,10 @@ const DashboardPage = () => {
           },
         });
         const data = await response.json();
-        setTemperatureData(data.temp);
-        setPressureData(data.pressure);
-        setRhData(data.rh);
-        setHumidityData(data.humidity);
+        setTemperatureData({ value: data.temp.value, updatedAt: data.temp.timestamp });
+        setPressureData({ value: data.pressure.value, updatedAt: data.pressure.timestamp });
+        setRhData({ value: data.rh.value, updatedAt: data.rh.timestamp });
+        setHumidityData({ value: data.humidity.value, updatedAt: data.humidity.timestamp });
       } catch (error) {
         console.error('Error fetching latest data:', error);
       }
@@ -59,16 +59,16 @@ const DashboardPage = () => {
       const { table, data } = update;
       switch (table) {
         case 'temp':
-          setTemperatureData(data);
+          setTemperatureData({ value: data.value, updatedAt: data.timestamp });
           break;
         case 'pressure':
-          setPressureData(data);
+          setPressureData({ value: data.value, updatedAt: data.timestamp });
           break;
         case 'rh':
-          setRhData(data);
+          setRhData({ value: data.value, updatedAt: data.timestamp });
           break;
         case 'humidity':
-          setHumidityData(data);
+          setHumidityData({ value: data.value, updatedAt: data.timestamp });
           break;
         default:
           break;
