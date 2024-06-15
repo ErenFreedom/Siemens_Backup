@@ -26,6 +26,9 @@ const DashboardPage = () => {
     const fetchUserDetails = async () => {
       try {
         const response = await fetch(`/api/user/${userId}`);
+        if (!response.ok) {
+          throw new Error('Network response was not ok');
+        }
         const data = await response.json();
         setUsername(data.username);
       } catch (error) {
@@ -41,6 +44,9 @@ const DashboardPage = () => {
             Authorization: `Bearer ${token}`,
           },
         });
+        if (!response.ok) {
+          throw new Error('Network response was not ok');
+        }
         const data = await response.json();
         setTemperatureData({ value: data.temp.value, updatedAt: data.temp.timestamp });
         setPressureData({ value: data.pressure.value, updatedAt: data.pressure.timestamp });
