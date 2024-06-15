@@ -22,6 +22,7 @@ exports.getLatestData = (req, res) => {
                         timestamp: null
                     };
                 } else {
+                    console.log(`Data fetched from ${table}:`, results); // Log the data
                     latestData[table] = {
                         value: results[0].value,
                         timestamp: results[0].timestamp
@@ -29,7 +30,7 @@ exports.getLatestData = (req, res) => {
                 }
                 completedRequests++;
                 if (completedRequests === tables.length) {
-                    console.log('Latest data to send:', latestData);
+                    console.log('Latest data to send:', latestData); // Log the final data being sent
                     return res.status(200).json(latestData);
                 }
 
