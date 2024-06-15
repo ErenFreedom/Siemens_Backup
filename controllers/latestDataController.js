@@ -15,34 +15,30 @@ exports.getLatestData = (req, res) => {
                 console.error(`Error fetching latest data from MySQL table ${table}:`, err);
                 return res.status(500).json({ error: `Error fetching latest data from ${table}` });
             } else {
-                if (results.length === 0) {
-                    console.warn(`No data found in ${table}`);
-                    latestData[table] = {
-                        value: null,
-                        timestamp: null
-                    };
-                } else {
-                    console.log(`Data fetched from ${table}:`, results); // Log the data
+                if (results.length > 0) {
                     latestData[table] = {
                         value: results[0].value,
                         timestamp: results[0].timestamp
                     };
+                } else {
+                    latestData[table] = {
+                        value: null,
+                        timestamp: null
+                    };
                 }
                 completedRequests++;
                 if (completedRequests === tables.length) {
-                    console.log('Latest data to send:', latestData); // Log the final data being sent
-                    return res.status(200).json(latestData);
+                    console.log('Sending latest data:', latestData); // Log the data being sent
+                    res.status(200).json(latestData);
                 }
 
                 // Emit the new data through socket.io
                 io.emit('data_update', { table, data: latestData[table] });
 
                 // Create a notification for new data insertion
-                const userId = req.user ? req.user.id : null; // Assuming you have user ID from the request
+                const userId = req.user.id; // Assuming you have user ID from the request
                 const message = `New data added to ${table} table.`;
-                if (userId) {
-                    createNotification(userId, 'data_update', message);
-                }
+                createNotification(userId, 'data_update', message);
             }
         });
     });
