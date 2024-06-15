@@ -20,18 +20,17 @@ const DashboardPage = () => {
       const decodedToken = jwtDecode(token);
       const userId = decodedToken.userId;
       // Use userId for further API calls
-      console.log('User ID from token:', userId);
     }
 
     // Function to fetch user details
     const fetchUserDetails = async () => {
       try {
-        console.log('Fetching user details for user ID:', userId);
         const response = await fetch(`/api/user/${userId}`);
         if (!response.ok) {
           throw new Error('Network response was not ok');
         }
         const data = await response.json();
+        console.log('User details:', data);
         setUsername(data.username);
       } catch (error) {
         console.error('Error fetching user details:', error);
@@ -41,7 +40,6 @@ const DashboardPage = () => {
     // Function to fetch the latest data
     const fetchLatestData = async () => {
       try {
-        console.log('Fetching latest data with token:', token);
         const response = await fetch(`${process.env.REACT_APP_API_URL}/api/latest`, {
           headers: {
             Authorization: `Bearer ${token}`,
