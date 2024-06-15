@@ -1,6 +1,6 @@
 const db = require('../config/db');
 const { createNotification } = require('./notificationController');
-const io = require('../server');
+const { io } = require('../server');
 
 // Controller function to get the latest data from all tables
 exports.getLatestData = (req, res) => {
@@ -28,7 +28,7 @@ exports.getLatestData = (req, res) => {
                 }
                 completedRequests++;
                 if (completedRequests === tables.length) {
-                    console.log('Sending latest data:', latestData); // Log the data being sent
+                    console.log('Sending latest data:', latestData);
                     res.status(200).json(latestData);
                 }
 

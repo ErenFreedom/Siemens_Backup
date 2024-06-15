@@ -7,7 +7,7 @@ const socketIo = require('socket.io');
 require('dotenv').config();
 
 const app = express();
-const port = process.env.PORT || 3001; // Ensure the port is set to 3001
+const port = process.env.PORT || 3001;
 
 const server = http.createServer(app);
 const io = socketIo(server);
@@ -26,20 +26,20 @@ app.use(helmet());
 
 // Rate limiter
 const limiter = rateLimit({
-    windowMs: 15 * 60 * 1000, // 15 minutes
-    max: 100 // limit each IP to 100 requests per windowMs
+    windowMs: 15 * 60 * 1000,
+    max: 100
 });
 app.use(limiter);
 
 // Routes
 app.use('/api', authRoutes);
-app.use('/api', dataRoutes); // Ensure this is protected with token verification
+app.use('/api', dataRoutes);
 app.use(loggerRoutes);
-app.use('/api', latestDataRoutes); // Adding the new route for latest data
-app.use('/api', reportRoutes); // Adding the new route for report generation
-app.use('/api', graphRoutes); // Adding the new route for graph data
-app.use('/api', accountRoutes); // Adding the new route for account management
-app.use('/api', notificationRoutes); // Adding the new route for notifications
+app.use('/api', latestDataRoutes);
+app.use('/api', reportRoutes);
+app.use('/api', graphRoutes);
+app.use('/api', accountRoutes);
+app.use('/api', notificationRoutes);
 
 // Socket.io connection
 io.on('connection', (socket) => {
@@ -50,7 +50,7 @@ io.on('connection', (socket) => {
 });
 
 // Export io for other modules
-module.exports = io;
+module.exports = { io };
 
 // Start the server
 server.listen(port, () => {
