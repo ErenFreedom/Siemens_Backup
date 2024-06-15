@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { jwtDecode } from 'jwt-decode'; // Import using named imports
-
+import jwtDecode from 'jwt-decode';
+import io from 'socket.io-client';
 import DashboardHeader from '../DashboardHeader/DashboardHeader';
 import './DashboardPage.css';
 
@@ -12,6 +12,7 @@ const DashboardPage = () => {
   const [pressureData, setPressureData] = useState({ value: '', updatedAt: '' });
   const [rhData, setRhData] = useState({ value: '', updatedAt: '' });
   const [humidityData, setHumidityData] = useState({ value: '', updatedAt: '' });
+  const socket = io(process.env.REACT_APP_API_URL); // Adjust according to your server URL
 
   useEffect(() => {
     const token = localStorage.getItem('authToken');
@@ -32,52 +33,51 @@ const DashboardPage = () => {
       }
     };
 
-    // Functions to fetch data from the database
-    const fetchTemperatureData = async () => {
+    // Function to fetch the latest data
+    const fetchLatestData = async () => {
       try {
-        const response = await fetch('/api/temperature');
+        const response = await fetch('/api/latest', {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
         const data = await response.json();
-        setTemperatureData({ value: data.value, updatedAt: data.updatedAt });
+        setTemperatureData(data.temp);
+        setPressureData(data.pressure);
+        setRhData(data.rh);
+        setHumidityData(data.humidity);
       } catch (error) {
-        console.error('Error fetching temperature data:', error);
-      }
-    };
-
-    const fetchPressureData = async () => {
-      try {
-        const response = await fetch('/api/pressure');
-        const data = await response.json();
-        setPressureData({ value: data.value, updatedAt: data.updatedAt });
-      } catch (error) {
-        console.error('Error fetching pressure data:', error);
-      }
-    };
-
-    const fetchRhData = async () => {
-      try {
-        const response = await fetch('/api/rh');
-        const data = await response.json();
-        setRhData({ value: data.value, updatedAt: data.updatedAt });
-      } catch (error) {
-        console.error('Error fetching RH data:', error);
-      }
-    };
-
-    const fetchHumidityData = async () => {
-      try {
-        const response = await fetch('/api/humidity');
-        const data = await response.json();
-        setHumidityData({ value: data.value, updatedAt: data.updatedAt });
-      } catch (error) {
-        console.error('Error fetching humidity data:', error);
+        console.error('Error fetching latest data:', error);
       }
     };
 
     fetchUserDetails();
-    fetchTemperatureData();
-    fetchPressureData();
-    fetchRhData();
-    fetchHumidityData();
+    fetchLatestData();
+
+    // Listen for real-time updates
+    socket.on('data_update', (update) => {
+      const { table, data } = update;
+      switch (table) {
+        case 'temp':
+          setTemperatureData(data);
+          break;
+        case 'pressure':
+          setPressureData(data);
+          break;
+        case 'rh':
+          setRhData(data);
+          break;
+        case 'humidity':
+          setHumidityData(data);
+          break;
+        default:
+          break;
+      }
+    });
+
+    return () => {
+      socket.disconnect();
+    };
   }, [userId]);
 
   return (
