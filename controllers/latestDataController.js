@@ -1,6 +1,6 @@
 const db = require('../config/db');
 const { createNotification } = require('./notificationController');
-const { io } = require('../server');
+const socket = require('../socket');
 
 // Controller function to get the latest data from all tables
 exports.getLatestData = (req, res) => {
@@ -33,6 +33,7 @@ exports.getLatestData = (req, res) => {
                 }
 
                 // Emit the new data through socket.io
+                const io = socket.getIo();
                 io.emit('data_update', { table, data: latestData[table] });
 
                 // Create a notification for new data insertion
