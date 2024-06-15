@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import jwtDecode from 'jwt-decode'; // Correct import for jwt-decode
+import jwt_decode from 'jwt-decode'; // Correct import for jwt-decode
 import io from 'socket.io-client';
 import DashboardHeader from '../DashboardHeader/DashboardHeader';
 import './DashboardPage.css';
@@ -17,7 +17,7 @@ const DashboardPage = () => {
   useEffect(() => {
     const token = localStorage.getItem('authToken');
     if (token) {
-      const decodedToken = jwtDecode(token);
+      const decodedToken = jwt_decode(token);
       const userId = decodedToken.userId;
       // Use userId for further API calls
     }
