@@ -24,7 +24,6 @@ const DashboardPage = () => {
     let decodedToken;
     try {
       decodedToken = jwtDecode(token);
-      // Use decodedToken.userId for further API calls if needed
     } catch (e) {
       console.error('Invalid token:', e);
       return;

@@ -32,7 +32,7 @@ const limiter = rateLimit({
 app.use(limiter);
 
 // Routes
-app.use('/api',authRoutes);
+app.use('/api', authRoutes);
 app.use('/api', dataRoutes); // Ensure this is protected with token verification
 app.use(loggerRoutes);
 app.use('/api', latestDataRoutes); // Adding the new route for latest data
