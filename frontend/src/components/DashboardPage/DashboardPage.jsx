@@ -16,24 +16,35 @@ const DashboardPage = () => {
 
   useEffect(() => {
     const token = localStorage.getItem('authToken');
-    if (token) {
-      const decodedToken = jwtDecode(token);
-      const userId = decodedToken.userId;
-      // Use userId for further API calls
+    if (!token) {
+      console.error('No token found');
+      return;
+    }
+
+    let decodedToken;
+    try {
+      decodedToken = jwtDecode(token);
+      // Use decodedToken.userId for further API calls if needed
+    } catch (e) {
+      console.error('Invalid token:', e);
+      return;
     }
 
     // Function to fetch user details
     const fetchUserDetails = async () => {
       try {
-        const response = await fetch(`${process.env.REACT_APP_API_URL}/user/${userId}`);
+        const response = await fetch(`${process.env.REACT_APP_API_URL}/user/${userId}`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
         if (!response.ok) {
-          throw new Error('Network response was not ok');
+          throw new Error(`Network response was not ok: ${response.statusText}`);
         }
         const data = await response.json();
-        console.log('User details:', data);
         setUsername(data.username);
       } catch (error) {
-        console.error('Error fetching user details:', error);
+        console.error('Error fetching user details:', error.message);
       }
     };
 
@@ -46,16 +57,15 @@ const DashboardPage = () => {
           },
         });
         if (!response.ok) {
-          throw new Error('Network response was not ok');
+          throw new Error(`Network response was not ok: ${response.statusText}`);
         }
         const data = await response.json();
-        console.log('Latest data received:', data);
         setTemperatureData({ value: data.temp.value, updatedAt: data.temp.timestamp });
         setPressureData({ value: data.pressure.value, updatedAt: data.pressure.timestamp });
         setRhData({ value: data.rh.value, updatedAt: data.rh.timestamp });
         setHumidityData({ value: data.humidity.value, updatedAt: data.humidity.timestamp });
       } catch (error) {
-        console.error('Error fetching latest data:', error);
+        console.error('Error fetching latest data:', error.message);
       }
     };
 
@@ -64,7 +74,6 @@ const DashboardPage = () => {
 
     // Listen for real-time updates
     socket.on('data_update', (update) => {
-      console.log('Data update received:', update);
       const { table, data } = update;
       switch (table) {
         case 'temp':

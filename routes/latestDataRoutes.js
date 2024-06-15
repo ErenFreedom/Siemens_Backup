@@ -4,7 +4,6 @@ const authenticateToken = require('../middlewares/authenticateToken');
 const latestDataController = require('../controllers/latestDataController');
 
 // Route to get the latest data from all tables
-router.get('/latest', latestDataController.getLatestData); // Temporarily remove authenticateToken for testing
+router.get('/latest', authenticateToken, latestDataController.getLatestData);
 
 module.exports = router;
-    
