@@ -24,11 +24,15 @@ const getDataAndMetrics = (table, filter, callback) => {
     const startTime = getStartTime(filter);
     const query = `SELECT * FROM ${table} WHERE timestamp >= ? ORDER BY timestamp ASC`;
 
+    console.log(`Executing query: ${query} with startTime: ${startTime}`);
+
     db.query(query, [startTime], (err, results) => {
         if (err) {
             console.error(`Error fetching data from table ${table}:`, err);
             return callback(err);
         }
+
+        console.log(`Query results: ${results.length} rows`);
 
         if (results.length === 0) {
             return callback(null, { data: [], metrics: {} });
@@ -52,6 +56,8 @@ const getDataAndMetrics = (table, filter, callback) => {
             variance,
             stddev
         };
+
+        console.log(`Metrics: ${JSON.stringify(metrics)}`);
 
         callback(null, { data, metrics });
     });
