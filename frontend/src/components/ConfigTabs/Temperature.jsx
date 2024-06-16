@@ -2,34 +2,20 @@ import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchTempData } from '../../actions/dataActions';
 import {
-  Chart as ChartJS,
-  LineElement,
-  CategoryScale,
-  LinearScale,
-  PointElement,
-  Title,
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  CartesianGrid,
   Tooltip,
   Legend,
-  TimeScale
-} from 'chart.js';
-import { Line } from 'react-chartjs-2';
-import 'chartjs-adapter-date-fns';
-
-ChartJS.register(
-  LineElement,
-  CategoryScale,
-  LinearScale,
-  PointElement,
-  Title,
-  Tooltip,
-  Legend,
-  TimeScale
-);
+  ResponsiveContainer
+} from 'recharts';
 
 const Temperature = () => {
-  const [filter, setFilter] = useState('1day'); // Default filter
+  const [filter, setFilter] = useState('30min'); // Default filter
   const dispatch = useDispatch();
-  const data = useSelector((state) => state.data.tempData);
+  const tempData = useSelector((state) => state.data.tempData);
   const error = useSelector((state) => state.data.error);
   const token = localStorage.getItem('authToken');
 
@@ -39,30 +25,14 @@ const Temperature = () => {
     }
   }, [dispatch, filter, token]);
 
-  useEffect(() => {
-    if (data) {
-      console.log('Temperature Data:', data); // Log the data
-    }
-  }, [data]);
-
   const handleFilterChange = (event) => {
     setFilter(event.target.value);
   };
 
-  const chartData = data && data.data.length ? {
-    labels: data.data.map((d) => new Date(d.timestamp).toLocaleTimeString()),
-    datasets: [
-      {
-        label: 'Temperature',
-        data: data.data.map((d) => d.value),
-        fill: false,
-        backgroundColor: 'rgb(75, 192, 192)',
-        borderColor: 'rgba(75, 192, 192, 0.2)',
-      },
-    ],
-  } : null;
-
-  console.log('Chart Data:', chartData);
+  const formatXAxis = (tickItem) => {
+    const date = new Date(tickItem);
+    return date.toLocaleString();
+  };
 
   return (
     <div className="config-content">
@@ -76,28 +46,30 @@ const Temperature = () => {
         <option value="1month">Last 1 month</option>
       </select>
       {error && <p className="error">{error}</p>}
-      {chartData ? (
+      {tempData && tempData.data.length ? (
         <>
-          <Line
-            data={chartData}
-            options={{
-              scales: {
-                x: {
-                  type: 'time',
-                  time: {
-                    unit: filter === '30min' || filter === '1hour' ? 'minute' : 'day',
-                  },
-                },
-              },
-            }}
-          />
+          <ResponsiveContainer width="100%" height={400}>
+            <LineChart
+              data={tempData.data}
+              margin={{
+                top: 5, right: 30, left: 20, bottom: 5,
+              }}
+            >
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis dataKey="timestamp" tickFormatter={formatXAxis} />
+              <YAxis />
+              <Tooltip labelFormatter={(label) => new Date(label).toLocaleString()} />
+              <Legend />
+              <Line type="monotone" dataKey="value" stroke="#8884d8" activeDot={{ r: 8 }} />
+            </LineChart>
+          </ResponsiveContainer>
           <div>
-            <p>Average: {data.metrics.average}</p>
-            <p>Max: {data.metrics.max}</p>
-            <p>Min: {data.metrics.min}</p>
-            <p>Range: {data.metrics.range}</p>
-            <p>Variance: {data.metrics.variance}</p>
-            <p>Standard Deviation: {data.metrics.stddev}</p>
+            <p>Average: {tempData.metrics.average}</p>
+            <p>Max: {tempData.metrics.max}</p>
+            <p>Min: {tempData.metrics.min}</p>
+            <p>Range: {tempData.metrics.range}</p>
+            <p>Variance: {tempData.metrics.variance}</p>
+            <p>Standard Deviation: {tempData.metrics.stddev}</p>
           </div>
         </>
       ) : (
