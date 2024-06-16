@@ -1,7 +1,30 @@
 import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchTempData } from '../../actions/dataActions';
+import {
+  Chart as ChartJS,
+  LineElement,
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  Title,
+  Tooltip,
+  Legend,
+  TimeScale
+} from 'chart.js';
 import { Line } from 'react-chartjs-2';
+import 'chartjs-adapter-date-fns';
+
+ChartJS.register(
+  LineElement,
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  Title,
+  Tooltip,
+  Legend,
+  TimeScale
+);
 
 const Temperature = () => {
   const [filter, setFilter] = useState('1day'); // Default filter
@@ -52,10 +75,10 @@ const Temperature = () => {
                 x: {
                   type: 'time',
                   time: {
-                    unit: 'minute'
-                  }
-                }
-              }
+                    unit: 'minute',
+                  },
+                },
+              },
             }}
           />
           <div>
