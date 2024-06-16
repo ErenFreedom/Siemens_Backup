@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { fetchTempData } from '../actions/dataActions';
+import { fetchTempData } from '../../actions/dataActions';
 import { Line } from 'react-chartjs-2';
 import 'chartjs-adapter-date-fns';
 
