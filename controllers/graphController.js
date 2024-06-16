@@ -1,5 +1,6 @@
 const db = require('../config/db');
 
+// Function to get the starting timestamp based on the filter
 const getStartTime = (filter) => {
     const now = new Date();
     switch (filter) {
@@ -20,6 +21,7 @@ const getStartTime = (filter) => {
     }
 };
 
+// Function to get data and metrics based on the filter
 const getDataAndMetrics = (table, filter, callback) => {
     const startTime = getStartTime(filter);
     const query = `SELECT * FROM ${table} WHERE timestamp >= ? ORDER BY timestamp ASC`;
