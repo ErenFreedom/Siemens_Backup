@@ -62,6 +62,8 @@ const Temperature = () => {
     ],
   } : null;
 
+  console.log('Chart Data:', chartData);
+
   return (
     <div className="config-content">
       <h3>Temperature Details</h3>
