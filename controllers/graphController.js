@@ -1,29 +1,30 @@
 const db = require('../config/db');
+const { sub, formatISO } = require('date-fns');
 
 // Function to get the starting timestamp based on the filter
 const getStartTime = (filter) => {
     const now = new Date();
     switch (filter) {
         case '30min':
-            return new Date(now.getTime() - 30 * 60 * 1000).toISOString().slice(0, 19).replace('T', ' ');
+            return formatISO(sub(now, { minutes: 30 }));
         case '1hour':
-            return new Date(now.getTime() - 60 * 60 * 1000).toISOString().slice(0, 19).replace('T', ' ');
+            return formatISO(sub(now, { hours: 1 }));
         case '6hours':
-            return new Date(now.getTime() - 6 * 60 * 60 * 1000).toISOString().slice(0, 19).replace('T', ' ');
+            return formatISO(sub(now, { hours: 6 }));
         case '1day':
-            return new Date(now.getTime() - 24 * 60 * 60 * 1000).toISOString().slice(0, 19).replace('T', ' ');
+            return formatISO(sub(now, { days: 1 }));
         case '1week':
-            return new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000).toISOString().slice(0, 19).replace('T', ' ');
+            return formatISO(sub(now, { weeks: 1 }));
         case '1month':
-            return new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000).toISOString().slice(0, 19).replace('T', ' ');
+            return formatISO(sub(now, { months: 1 }));
         default:
-            return now.toISOString().slice(0, 19).replace('T', ' ');
+            return formatISO(now);
     }
 };
 
 // Function to get data and metrics based on the filter
 const getDataAndMetrics = (table, filter, callback) => {
-    const startTime = getStartTime(filter);
+    const startTime = getStartTime(filter).slice(0, 19).replace('T', ' ');
     const query = `SELECT * FROM ${table} WHERE timestamp >= ? ORDER BY timestamp ASC`;
 
     console.log(`Executing query: ${query} with startTime: ${startTime}`);
