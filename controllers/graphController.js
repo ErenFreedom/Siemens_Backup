@@ -27,7 +27,7 @@ const getDataAndMetrics = (table, filter, callback) => {
     const startTime = getStartTime(filter).slice(0, 19).replace('T', ' ');
     const query = `SELECT * FROM ${table} WHERE timestamp >= ? ORDER BY timestamp ASC`;
 
-    console.log(`Executing query: ${query} with startTime: ${startTime}`);
+    console.log(`Executing query: ${query} with startTime: '${startTime}'`);
 
     db.query(query, [startTime], (err, results) => {
         if (err) {
