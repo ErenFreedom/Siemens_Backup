@@ -2,22 +2,32 @@ const db = require('../config/db');
 
 const getStartTime = (filter) => {
     const now = new Date();
+    let startTime;
+
     switch (filter) {
         case '30min':
-            return new Date(now.getTime() - 30 * 60 * 1000).toISOString();
+            startTime = new Date(now.getTime() - 30 * 60 * 1000);
+            break;
         case '1hour':
-            return new Date(now.getTime() - 60 * 60 * 1000).toISOString();
+            startTime = new Date(now.getTime() - 60 * 60 * 1000);
+            break;
         case '6hours':
-            return new Date(now.getTime() - 6 * 60 * 60 * 1000).toISOString();
+            startTime = new Date(now.getTime() - 6 * 60 * 60 * 1000);
+            break;
         case '1day':
-            return new Date(now.getTime() - 24 * 60 * 60 * 1000).toISOString();
+            startTime = new Date(now.getTime() - 24 * 60 * 60 * 1000);
+            break;
         case '1week':
-            return new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000).toISOString();
+            startTime = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+            break;
         case '1month':
-            return new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000).toISOString();
+            startTime = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+            break;
         default:
-            return now.toISOString();
+            startTime = now;
     }
+
+    return startTime.toISOString().slice(0, 19).replace('T', ' ');
 };
 
 const getDataAndMetrics = (table, filter, callback) => {
@@ -65,6 +75,7 @@ const getDataAndMetrics = (table, filter, callback) => {
 
 exports.getTempData = (req, res) => {
     const { filter } = req.params;
+    console.log(`Fetching temperature data with filter: ${filter}`);
     getDataAndMetrics('temp', filter, (err, result) => {
         if (err) return res.status(500).send('Error fetching temperature data');
         res.json(result);
