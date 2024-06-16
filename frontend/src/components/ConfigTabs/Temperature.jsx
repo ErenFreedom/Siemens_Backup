@@ -1,56 +1,43 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchTempData } from '../../actions/dataActions';
-import { Line } from 'react-chartjs-2';
-import 'chartjs-adapter-date-fns';
+import {
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  Legend,
+  ResponsiveContainer
+} from 'recharts';
 
 const Temperature = () => {
+  const [filter, setFilter] = useState('30min'); // Default filter
   const dispatch = useDispatch();
-  const { tempData, error } = useSelector((state) => state.data);
-  const [filter, setFilter] = React.useState('30min');
+  const tempData = useSelector((state) => state.data.tempData);
+  const error = useSelector((state) => state.data.error);
+  const token = localStorage.getItem('authToken');
 
   useEffect(() => {
-    const token = localStorage.getItem('token');
-    dispatch(fetchTempData({ filter, token }));
-  }, [dispatch, filter]);
+    if (token) {
+      dispatch(fetchTempData({ filter, token }));
+    }
+  }, [dispatch, filter, token]);
 
-  const formatDate = (timestamp) => {
-    const date = new Date(timestamp);
+  const handleFilterChange = (event) => {
+    setFilter(event.target.value);
+  };
+
+  const formatXAxis = (tickItem) => {
+    const date = new Date(tickItem);
     return date.toLocaleString();
-  };
-
-  const data = {
-    labels: tempData?.data?.map((entry) => formatDate(entry.timestamp)) || [],
-    datasets: [
-      {
-        label: 'Temperature',
-        data: tempData?.data?.map((entry) => entry.value) || [],
-        fill: false,
-        borderColor: 'rgba(75,192,192,1)',
-        tension: 0.1,
-      },
-    ],
-  };
-
-  const options = {
-    scales: {
-      x: {
-        type: 'time',
-        time: {
-          unit: 'minute',
-        },
-      },
-      y: {
-        beginAtZero: true,
-      },
-    },
   };
 
   return (
     <div className="config-content">
       <h3>Temperature Details</h3>
-      {error && <p>Error: {error}</p>}
-      <select value={filter} onChange={(e) => setFilter(e.target.value)}>
+      <select value={filter} onChange={handleFilterChange}>
         <option value="30min">Last 30 minutes</option>
         <option value="1hour">Last 1 hour</option>
         <option value="6hours">Last 6 hours</option>
@@ -58,9 +45,24 @@ const Temperature = () => {
         <option value="1week">Last 1 week</option>
         <option value="1month">Last 1 month</option>
       </select>
-      {tempData ? (
+      {error && <p className="error">{error}</p>}
+      {tempData && tempData.data.length ? (
         <>
-          <Line data={data} options={options} />
+          <ResponsiveContainer width="100%" height={400}>
+            <LineChart
+              data={tempData.data}
+              margin={{
+                top: 5, right: 30, left: 20, bottom: 5,
+              }}
+            >
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis dataKey="timestamp" tickFormatter={formatXAxis} />
+              <YAxis />
+              <Tooltip labelFormatter={(label) => new Date(label).toLocaleString()} />
+              <Legend />
+              <Line type="monotone" dataKey="value" stroke="#8884d8" activeDot={{ r: 8 }} />
+            </LineChart>
+          </ResponsiveContainer>
           <div>
             <p>Average: {tempData.metrics.average}</p>
             <p>Max: {tempData.metrics.max}</p>
