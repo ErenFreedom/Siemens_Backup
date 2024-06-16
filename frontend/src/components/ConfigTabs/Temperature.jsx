@@ -39,9 +39,28 @@ const Temperature = () => {
     }
   }, [dispatch, filter, token]);
 
+  useEffect(() => {
+    if (data) {
+      console.log('Temperature Data:', data); // Log the data
+    }
+  }, [data]);
+
   const handleFilterChange = (event) => {
     setFilter(event.target.value);
   };
+
+  const chartData = data ? {
+    labels: data.data.map((d) => new Date(d.timestamp).toLocaleTimeString()),
+    datasets: [
+      {
+        label: 'Temperature',
+        data: data.data.map((d) => d.value),
+        fill: false,
+        backgroundColor: 'rgb(75, 192, 192)',
+        borderColor: 'rgba(75, 192, 192, 0.2)',
+      },
+    ],
+  } : null;
 
   return (
     <div className="config-content">
@@ -58,24 +77,13 @@ const Temperature = () => {
       {data ? (
         <>
           <Line
-            data={{
-              labels: data.data.map((d) => new Date(d.timestamp).toLocaleTimeString()),
-              datasets: [
-                {
-                  label: 'Temperature',
-                  data: data.data.map((d) => d.value),
-                  fill: false,
-                  backgroundColor: 'rgb(75, 192, 192)',
-                  borderColor: 'rgba(75, 192, 192, 0.2)',
-                },
-              ],
-            }}
+            data={chartData}
             options={{
               scales: {
                 x: {
                   type: 'time',
                   time: {
-                    unit: 'minute',
+                    unit: filter === '30min' || filter === '1hour' ? 'minute' : 'day',
                   },
                 },
               },
