@@ -49,7 +49,7 @@ const Temperature = () => {
     setFilter(event.target.value);
   };
 
-  const chartData = data ? {
+  const chartData = data && data.data.length ? {
     labels: data.data.map((d) => new Date(d.timestamp).toLocaleTimeString()),
     datasets: [
       {
@@ -76,7 +76,7 @@ const Temperature = () => {
         <option value="1month">Last 1 month</option>
       </select>
       {error && <p className="error">{error}</p>}
-      {data ? (
+      {chartData ? (
         <>
           <Line
             data={chartData}
