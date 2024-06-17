@@ -1,23 +1,23 @@
 const db = require('../config/db');
-const { formatISO } = require('date-fns'); // Using date-fns to format the date
+const moment = require('moment'); // Importing moment library
 
 const getStartTime = (filter) => {
-    const now = new Date();
+    const now = moment();
     switch (filter) {
         case '30min':
-            return formatISO(new Date(now.getTime() - 30 * 60 * 1000), { representation: 'complete' });
+            return now.subtract(30, 'minutes').format('YYYY-MM-DD HH:mm:ss');
         case '1hour':
-            return formatISO(new Date(now.getTime() - 60 * 60 * 1000), { representation: 'complete' });
+            return now.subtract(1, 'hour').format('YYYY-MM-DD HH:mm:ss');
         case '6hours':
-            return formatISO(new Date(now.getTime() - 6 * 60 * 60 * 1000), { representation: 'complete' });
+            return now.subtract(6, 'hours').format('YYYY-MM-DD HH:mm:ss');
         case '1day':
-            return formatISO(new Date(now.getTime() - 24 * 60 * 60 * 1000), { representation: 'complete' });
+            return now.subtract(1, 'day').format('YYYY-MM-DD HH:mm:ss');
         case '1week':
-            return formatISO(new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000), { representation: 'complete' });
+            return now.subtract(1, 'week').format('YYYY-MM-DD HH:mm:ss');
         case '1month':
-            return formatISO(new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000), { representation: 'complete' });
+            return now.subtract(1, 'month').format('YYYY-MM-DD HH:mm:ss');
         default:
-            return formatISO(now, { representation: 'complete' });
+            return now.format('YYYY-MM-DD HH:mm:ss');
     }
 };
 
@@ -37,7 +37,7 @@ const getDataAndMetrics = (table, filter, callback) => {
 
         const data = results.map(row => ({
             ...row,
-            formattedTimestamp: new Date(row.timestamp).toLocaleString() // Formatting to user-friendly date
+            formattedTimestamp: moment(row.timestamp).format('YYYY-MM-DD HH:mm:ss') // Formatting to user-friendly date
         }));
 
         const values = data.map(row => row.value);
