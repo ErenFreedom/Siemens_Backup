@@ -26,15 +26,6 @@ const filterDataByTimeWindow = (data, timeWindow) => {
     let startTime;
 
     switch (timeWindow) {
-        case '30min':
-            startTime = new Date(endTime.getTime() - 30 * 60 * 1000);
-            break;
-        case '1hour':
-            startTime = new Date(endTime.getTime() - 60 * 60 * 1000);
-            break;
-        case '6hours':
-            startTime = new Date(endTime.getTime() - 6 * 60 * 1000);
-            break;
         case '1day':
             startTime = new Date(endTime.getTime() - 24 * 60 * 60 * 1000);
             break;
@@ -94,9 +85,6 @@ const getFilteredData = (req, res, timeWindow) => {
     });
 };
 
-exports.getTempData30Min = (req, res) => getFilteredData(req, res, '30min');
-exports.getTempData1Hour = (req, res) => getFilteredData(req, res, '1hour');
-exports.getTempData6Hours = (req, res) => getFilteredData(req, res, '6hours');
 exports.getTempData1Day = (req, res) => getFilteredData(req, res, '1day');
 exports.getTempData1Week = (req, res) => getFilteredData(req, res, '1week');
 exports.getTempData1Month = (req, res) => getFilteredData(req, res, '1month');
