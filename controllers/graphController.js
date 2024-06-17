@@ -39,7 +39,7 @@ const filterDataByTimeWindow = (data, timeWindow) => {
             return data;
     }
 
-    console.log(`Filtering data from startTime: ${startTime} to endTime: ${endTime}`);
+    console.log(`Filtering data from startTime: ${startTime.toISOString()} to endTime: ${endTime.toISOString()}`);
     return data.filter(item => new Date(item.timestamp) >= startTime && new Date(item.timestamp) <= endTime);
 };
 
