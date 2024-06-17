@@ -13,7 +13,7 @@ import {
 } from 'recharts';
 
 const Temperature = () => {
-  const [filter, setFilter] = useState('30min'); // Default filter
+  const [filter, setFilter] = useState('1day'); // Default filter
   const dispatch = useDispatch();
   const tempData = useSelector((state) => state.data.tempData);
   const error = useSelector((state) => state.data.error);
@@ -38,9 +38,6 @@ const Temperature = () => {
     <div className="config-content">
       <h3>Temperature Details</h3>
       <select value={filter} onChange={handleFilterChange}>
-        <option value="30min">Last 30 minutes</option>
-        <option value="1hour">Last 1 hour</option>
-        <option value="6hours">Last 6 hours</option>
         <option value="1day">Last 1 day</option>
         <option value="1week">Last 1 week</option>
         <option value="1month">Last 1 month</option>
