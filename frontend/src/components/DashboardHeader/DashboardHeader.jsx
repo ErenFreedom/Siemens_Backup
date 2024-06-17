@@ -1,10 +1,12 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useParams } from 'react-router-dom';
 import { FaBell, FaUserCircle } from 'react-icons/fa';
 import logo from '../../assets/logo.png'; // Ensure the path to the logo is correct
 import './DashboardHeader.css';
 
 const DashboardHeader = () => {
+  const { userId } = useParams();
+
   return (
     <div className="header-container">
       <div className="logo-container">
@@ -19,7 +21,9 @@ const DashboardHeader = () => {
           </div>
         </div>
         <div className="report-button">
-          <button>Generate Report</button>
+          <Link to={`/report/${userId}`}>
+            <button>Generate Report</button>
+          </Link>
         </div>
         <div className="profile-dropdown">
           <FaUserCircle className="icon" />
