@@ -31,6 +31,7 @@ const getDataAndMetrics = (table, filter, callback) => {
             return callback(err);
         }
 
+        // Filter data in the backend based on timestamp
         const filteredResults = results.filter(row => moment(row.timestamp).isAfter(startTime));
 
         if (filteredResults.length === 0) {
