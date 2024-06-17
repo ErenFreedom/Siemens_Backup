@@ -1,46 +1,43 @@
 const db = require('../config/db');
-const moment = require('moment'); // Importing moment library
+const moment = require('moment'); // Ensure moment is installed using npm install moment
 
 const getStartTime = (filter) => {
     const now = moment();
     switch (filter) {
         case '30min':
-            return now.subtract(30, 'minutes').format('YYYY-MM-DD HH:mm:ss');
+            return now.subtract(30, 'minutes');
         case '1hour':
-            return now.subtract(1, 'hour').format('YYYY-MM-DD HH:mm:ss');
+            return now.subtract(1, 'hours');
         case '6hours':
-            return now.subtract(6, 'hours').format('YYYY-MM-DD HH:mm:ss');
+            return now.subtract(6, 'hours');
         case '1day':
-            return now.subtract(1, 'day').format('YYYY-MM-DD HH:mm:ss');
+            return now.subtract(1, 'days');
         case '1week':
-            return now.subtract(1, 'week').format('YYYY-MM-DD HH:mm:ss');
+            return now.subtract(1, 'weeks');
         case '1month':
-            return now.subtract(1, 'month').format('YYYY-MM-DD HH:mm:ss');
+            return now.subtract(1, 'months');
         default:
-            return now.format('YYYY-MM-DD HH:mm:ss');
+            return now;
     }
 };
 
 const getDataAndMetrics = (table, filter, callback) => {
     const startTime = getStartTime(filter);
-    const query = `SELECT * FROM ${table} WHERE timestamp >= ? ORDER BY timestamp ASC`;
+    const query = `SELECT id, value, timestamp FROM ${table} ORDER BY id ASC`;
 
-    db.query(query, [startTime], (err, results) => {
+    db.query(query, (err, results) => {
         if (err) {
             console.error(`Error fetching data from table ${table}:`, err);
             return callback(err);
         }
 
-        if (results.length === 0) {
+        const filteredResults = results.filter(row => moment(row.timestamp).isAfter(startTime));
+
+        if (filteredResults.length === 0) {
             return callback(null, { data: [], metrics: {} });
         }
 
-        const data = results.map(row => ({
-            ...row,
-            formattedTimestamp: moment(row.timestamp).format('YYYY-MM-DD HH:mm:ss') // Formatting to user-friendly date
-        }));
-
-        const values = data.map(row => row.value);
+        const values = filteredResults.map(row => row.value);
         const sum = values.reduce((a, b) => a + b, 0);
         const average = (sum / values.length).toFixed(2);
         const max = Math.max(...values).toFixed(2);
@@ -58,13 +55,12 @@ const getDataAndMetrics = (table, filter, callback) => {
             stddev
         };
 
-        callback(null, { data, metrics });
+        callback(null, { data: filteredResults, metrics });
     });
 };
 
 exports.getTempData = (req, res) => {
     const { filter } = req.params;
-    console.log(`Fetching temperature data with filter: ${filter}`);
     getDataAndMetrics('temp', filter, (err, result) => {
         if (err) return res.status(500).send('Error fetching temperature data');
         res.json(result);
