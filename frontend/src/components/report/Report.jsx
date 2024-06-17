@@ -11,12 +11,16 @@ const Report = () => {
   const [documentType, setDocumentType] = useState('');
 
   const handleGenerateReport = async () => {
+    const token = localStorage.getItem('authToken'); // Assuming the token is stored in local storage
     try {
       const response = await axios.post(`${process.env.REACT_APP_API_URL}/report/generate`, {
         table,
         timeWindow: specificTime || timeRange,
         format: documentType,
       }, {
+        headers: {
+          Authorization: `Bearer ${token}`
+        },
         responseType: 'blob',
       });
 
