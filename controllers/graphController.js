@@ -5,23 +5,23 @@ const getStartTime = (filter) => {
     const now = moment();
     switch (filter) {
         case '30min':
-            return now.subtract(30, 'minutes');
+            return now.subtract(30, 'minutes').toISOString();
         case '1hour':
-            return now.subtract(1, 'hours');
+            return now.subtract(1, 'hours').toISOString();
         case '6hours':
-            return now.subtract(6, 'hours');
+            return now.subtract(6, 'hours').toISOString();
         case '1day':
-            return now.subtract(1, 'days');
+            return now.subtract(1, 'days').toISOString();
         case '1week':
-            return now.subtract(1, 'weeks');
+            return now.subtract(1, 'weeks').toISOString();
         case '1month':
-            return now.subtract(1, 'months');
+            return now.subtract(1, 'months').toISOString();
         default:
-            return now;
+            return now.toISOString();
     }
 };
 
-const getDataAndMetrics = (callback) => {
+const getDataAndMetrics = (filter, callback) => {
     const query = `SELECT value, timestamp FROM temp ORDER BY id ASC`;
 
     db.query(query, (err, results) => {
@@ -31,31 +31,19 @@ const getDataAndMetrics = (callback) => {
         }
 
         if (results.length === 0) {
+            console.log('No data found in temp table');
             return callback(null, { data: [], metrics: {} });
         }
 
-        const data = results.map(row => ({
-            value: row.value,
-            timestamp: row.timestamp
-        }));
-
-        callback(null, data);
-    });
-};
-
-exports.getTempData = (req, res) => {
-    const { filter } = req.params;
-    const startTime = getStartTime(filter);
-
-    getDataAndMetrics((err, data) => {
-        if (err) return res.status(500).send('Error fetching temperature data');
-
-        // Filter data based on the start time
-        const filteredData = data.filter(row => moment(row.timestamp).isAfter(startTime));
+        const startTime = moment(getStartTime(filter));
+        const filteredData = results.filter(row => moment(row.timestamp).isAfter(startTime));
 
         if (filteredData.length === 0) {
-            return res.json({ data: [], metrics: {} });
+            console.log('No data found for the specified filter:', filter);
+            return callback(null, { data: [], metrics: {} });
         }
+
+        console.log(`Filtered data for filter ${filter}:`, filteredData);
 
         const values = filteredData.map(row => row.value);
         const sum = values.reduce((a, b) => a + b, 0);
@@ -75,6 +63,15 @@ exports.getTempData = (req, res) => {
             stddev
         };
 
-        res.json({ data: filteredData, metrics });
+        callback(null, { data: filteredData, metrics });
+    });
+};
+
+exports.getTempData = (req, res) => {
+    const { filter } = req.params;
+
+    getDataAndMetrics(filter, (err, result) => {
+        if (err) return res.status(500).send('Error fetching temperature data');
+        res.json(result);
     });
 };
