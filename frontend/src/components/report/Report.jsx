@@ -1,21 +1,35 @@
 import React, { useState } from 'react';
 import { useParams } from 'react-router-dom';
+import axios from 'axios';
 import './Report.css';
 
 const Report = () => {
   const { userId } = useParams();
+  const [table, setTable] = useState('');
   const [timeRange, setTimeRange] = useState('today');
   const [specificTime, setSpecificTime] = useState('');
   const [documentType, setDocumentType] = useState('');
-  const [table, setTable] = useState('');
 
-  const handleGenerateReport = () => {
-    // Implement report generation logic here
-    console.log(`Generating report for User ${userId}`);
-    console.log(`Table: ${table}`);
-    console.log(`Time Range: ${timeRange}`);
-    console.log(`Specific Time: ${specificTime}`);
-    console.log(`Document Type: ${documentType}`);
+  const handleGenerateReport = async () => {
+    try {
+      const response = await axios.post(`${process.env.REACT_APP_API_URL}/report/generate`, {
+        table,
+        timeWindow: specificTime || timeRange,
+        format: documentType,
+      }, {
+        responseType: 'blob',
+      });
+
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', `report.${documentType}`);
+      document.body.appendChild(link);
+      link.click();
+      link.parentNode.removeChild(link);
+    } catch (error) {
+      console.error('Error generating report:', error);
+    }
   };
 
   return (
