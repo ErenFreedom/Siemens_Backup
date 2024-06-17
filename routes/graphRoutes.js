@@ -4,6 +4,11 @@ const authenticateToken = require('../middlewares/authenticateToken');
 const graphController = require('../controllers/graphController');
 
 // Routes to get data for graphs
-router.get('/graph/temp', authenticateToken, graphController.getTempData);
+router.get('/graph/temp/30min', authenticateToken, graphController.getTempData30Min);
+router.get('/graph/temp/1hour', authenticateToken, graphController.getTempData1Hour);
+router.get('/graph/temp/6hours', authenticateToken, graphController.getTempData6Hours);
+router.get('/graph/temp/1day', authenticateToken, graphController.getTempData1Day);
+router.get('/graph/temp/1week', authenticateToken, graphController.getTempData1Week);
+router.get('/graph/temp/1month', authenticateToken, graphController.getTempData1Month);
 
 module.exports = router;
