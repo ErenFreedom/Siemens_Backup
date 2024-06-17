@@ -1,6 +1,6 @@
 const db = require('../config/db');
 
-const fetchData = (callback) => {
+const fetchAllData = (callback) => {
     const query = `SELECT value, timestamp FROM temp ORDER BY id ASC`;
 
     db.query(query, (err, results) => {
@@ -19,42 +19,44 @@ const fetchData = (callback) => {
     });
 };
 
-const filterData = (data, timeWindow) => {
-    const now = new Date();
+const filterDataByTimeWindow = (data, timeWindow) => {
+    if (data.length === 0) return [];
+
+    const endTime = new Date(data[data.length - 1].timestamp);
     let startTime;
 
     switch (timeWindow) {
         case '30min':
-            startTime = new Date(now.getTime() - 30 * 60 * 1000);
+            startTime = new Date(endTime.getTime() - 30 * 60 * 1000);
             break;
         case '1hour':
-            startTime = new Date(now.getTime() - 60 * 60 * 1000);
+            startTime = new Date(endTime.getTime() - 60 * 60 * 1000);
             break;
         case '6hours':
-            startTime = new Date(now.getTime() - 6 * 60 * 60 * 1000);
+            startTime = new Date(endTime.getTime() - 6 * 60 * 1000);
             break;
         case '1day':
-            startTime = new Date(now.getTime() - 24 * 60 * 60 * 1000);
+            startTime = new Date(endTime.getTime() - 24 * 60 * 60 * 1000);
             break;
         case '1week':
-            startTime = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+            startTime = new Date(endTime.getTime() - 7 * 24 * 60 * 60 * 1000);
             break;
         case '1month':
-            startTime = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+            startTime = new Date(endTime.getTime() - 30 * 24 * 60 * 60 * 1000);
             break;
         default:
             return data;
     }
 
-    console.log(`Filtering data from startTime: ${startTime}`);
-    return data.filter(item => new Date(item.timestamp) >= startTime);
+    console.log(`Filtering data from startTime: ${startTime} to endTime: ${endTime}`);
+    return data.filter(item => new Date(item.timestamp) >= startTime && new Date(item.timestamp) <= endTime);
 };
 
 const getFilteredData = (req, res, timeWindow) => {
-    fetchData((err, data) => {
+    fetchAllData((err, data) => {
         if (err) return res.status(500).send('Error fetching temperature data');
 
-        const filteredData = filterData(data, timeWindow);
+        const filteredData = filterDataByTimeWindow(data, timeWindow);
 
         const values = filteredData.map(item => item.value);
         if (values.length === 0) {
