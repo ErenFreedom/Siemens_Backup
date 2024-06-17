@@ -1,11 +1,14 @@
 import { createSlice } from '@reduxjs/toolkit';
-import { fetchData, fetchTempData } from '../actions/dataActions';
+import { fetchData, fetchTempData, fetchRhData, fetchPressureData, fetchHumidityData } from '../actions/dataActions';
 
 const dataSlice = createSlice({
   name: 'data',
   initialState: {
     data: null,
-    tempData: null, // New state for temperature data
+    tempData: null,
+    rhData: null,
+    pressureData: null,
+    humidityData: null,
     error: null,
   },
   reducers: {},
@@ -25,6 +28,30 @@ const dataSlice = createSlice({
       })
       .addCase(fetchTempData.rejected, (state, action) => {
         state.tempData = null;
+        state.error = action.error.message;
+      })
+      .addCase(fetchRhData.fulfilled, (state, action) => {
+        state.rhData = action.payload;
+        state.error = null;
+      })
+      .addCase(fetchRhData.rejected, (state, action) => {
+        state.rhData = null;
+        state.error = action.error.message;
+      })
+      .addCase(fetchPressureData.fulfilled, (state, action) => {
+        state.pressureData = action.payload;
+        state.error = null;
+      })
+      .addCase(fetchPressureData.rejected, (state, action) => {
+        state.pressureData = null;
+        state.error = action.error.message;
+      })
+      .addCase(fetchHumidityData.fulfilled, (state, action) => {
+        state.humidityData = action.payload;
+        state.error = null;
+      })
+      .addCase(fetchHumidityData.rejected, (state, action) => {
+        state.humidityData = null;
         state.error = action.error.message;
       });
   },

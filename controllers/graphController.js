@@ -1,20 +1,20 @@
 const db = require('../config/db');
 
-const fetchAllData = (callback) => {
-    const query = `SELECT value, timestamp FROM temp ORDER BY id ASC`;
+const fetchAllData = (table, callback) => {
+    const query = `SELECT value, timestamp FROM ${table} ORDER BY id ASC`;
 
     db.query(query, (err, results) => {
         if (err) {
-            console.error(`Error fetching data from table temp:`, err);
+            console.error(`Error fetching data from table ${table}:`, err);
             return callback(err);
         }
 
         if (results.length === 0) {
-            console.log('No data found in temp table');
+            console.log(`No data found in ${table} table`);
             return callback(null, []);
         }
 
-        console.log(`Fetched data from temp table:`, results);
+        console.log(`Fetched data from ${table} table:`, results);
         callback(null, results);
     });
 };
@@ -43,9 +43,9 @@ const filterDataByTimeWindow = (data, timeWindow) => {
     return data.filter(item => new Date(item.timestamp) >= startTime && new Date(item.timestamp) <= endTime);
 };
 
-const getFilteredData = (req, res, timeWindow) => {
-    fetchAllData((err, data) => {
-        if (err) return res.status(500).send('Error fetching temperature data');
+const getFilteredData = (req, res, table, timeWindow) => {
+    fetchAllData(table, (err, data) => {
+        if (err) return res.status(500).send(`Error fetching ${table} data`);
 
         const filteredData = filterDataByTimeWindow(data, timeWindow);
 
@@ -85,6 +85,18 @@ const getFilteredData = (req, res, timeWindow) => {
     });
 };
 
-exports.getTempData1Day = (req, res) => getFilteredData(req, res, '1day');
-exports.getTempData1Week = (req, res) => getFilteredData(req, res, '1week');
-exports.getTempData1Month = (req, res) => getFilteredData(req, res, '1month');
+exports.getTempData1Day = (req, res) => getFilteredData(req, res, 'temp', '1day');
+exports.getTempData1Week = (req, res) => getFilteredData(req, res, 'temp', '1week');
+exports.getTempData1Month = (req, res) => getFilteredData(req, res, 'temp', '1month');
+
+exports.getRhData1Day = (req, res) => getFilteredData(req, res, 'rh', '1day');
+exports.getRhData1Week = (req, res) => getFilteredData(req, res, 'rh', '1week');
+exports.getRhData1Month = (req, res) => getFilteredData(req, res, 'rh', '1month');
+
+exports.getPressureData1Day = (req, res) => getFilteredData(req, res, 'pressure', '1day');
+exports.getPressureData1Week = (req, res) => getFilteredData(req, res, 'pressure', '1week');
+exports.getPressureData1Month = (req, res) => getFilteredData(req, res, 'pressure', '1month');
+
+exports.getHumidityData1Day = (req, res) => getFilteredData(req, res, 'humidity', '1day');
+exports.getHumidityData1Week = (req, res) => getFilteredData(req, res, 'humidity', '1week');
+exports.getHumidityData1Month = (req, res) => getFilteredData(req, res, 'humidity', '1month');
