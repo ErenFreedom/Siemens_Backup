@@ -7,10 +7,12 @@ const Report = () => {
   const [timeRange, setTimeRange] = useState('today');
   const [specificTime, setSpecificTime] = useState('');
   const [documentType, setDocumentType] = useState('');
+  const [table, setTable] = useState('');
 
   const handleGenerateReport = () => {
     // Implement report generation logic here
     console.log(`Generating report for User ${userId}`);
+    console.log(`Table: ${table}`);
     console.log(`Time Range: ${timeRange}`);
     console.log(`Specific Time: ${specificTime}`);
     console.log(`Document Type: ${documentType}`);
@@ -20,6 +22,16 @@ const Report = () => {
     <div className="report-page-container">
       <div className="report-form">
         <h2>Generate Report for User {userId}</h2>
+
+        <label htmlFor="table">Select Table:</label>
+        <select id="table" value={table} onChange={(e) => setTable(e.target.value)}>
+          <option value="">Select...</option>
+          <option value="temp">Temperature</option>
+          <option value="pressure">Pressure</option>
+          <option value="rh">Relative Humidity</option>
+          <option value="humidity">Humidity</option>
+        </select>
+
         <label htmlFor="timeRange">Select Time Range:</label>
         <select id="timeRange" value={timeRange} onChange={(e) => setTimeRange(e.target.value)}>
           <option value="today">Today</option>

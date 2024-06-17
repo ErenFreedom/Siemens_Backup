@@ -4,29 +4,68 @@ const excel = require('excel4node');
 const PDFDocument = require('pdfkit');
 const fs = require('fs');
 
-exports.generateReport = async (req, res) => {
-    const { table, startTime, endTime, format } = req.body;
+const fetchAllData = (table, callback) => {
+    const query = `SELECT value, timestamp FROM ${table} ORDER BY id ASC`;
 
-    if (!table || !startTime || !endTime || !format) {
-        return res.status(400).send('Missing required parameters');
-    }
-
-    const query = `SELECT * FROM ${table} WHERE timestamp BETWEEN ? AND ?`;
-    const values = [startTime, endTime];
-
-    db.query(query, values, (err, results) => {
+    db.query(query, (err, results) => {
         if (err) {
-            console.error('Error fetching data for report:', err);
-            return res.status(500).send('Error fetching data');
+            console.error(`Error fetching data from table ${table}:`, err);
+            return callback(err);
         }
 
         if (results.length === 0) {
+            console.log(`No data found in ${table} table`);
+            return callback(null, []);
+        }
+
+        console.log(`Fetched data from ${table} table:`, results);
+        callback(null, results);
+    });
+};
+
+const filterDataByTimeWindow = (data, timeWindow) => {
+    if (data.length === 0) return [];
+
+    const endTime = new Date(data[data.length - 1].timestamp);
+    let startTime;
+
+    switch (timeWindow) {
+        case '1day':
+            startTime = new Date(endTime.getTime() - 24 * 60 * 60 * 1000);
+            break;
+        case '1week':
+            startTime = new Date(endTime.getTime() - 7 * 24 * 60 * 60 * 1000);
+            break;
+        case '1month':
+            startTime = new Date(endTime.getTime() - 30 * 24 * 60 * 60 * 1000);
+            break;
+        default:
+            return data;
+    }
+
+    console.log(`Filtering data from startTime: ${startTime} to endTime: ${endTime}`);
+    return data.filter(item => new Date(item.timestamp) >= startTime && new Date(item.timestamp) <= endTime);
+};
+
+exports.generateReport = async (req, res) => {
+    const { table, timeWindow, format } = req.body;
+
+    if (!table || !timeWindow || !format) {
+        return res.status(400).send('Missing required parameters');
+    }
+
+    fetchAllData(table, (err, data) => {
+        if (err) return res.status(500).send('Error fetching data');
+
+        const filteredData = filterDataByTimeWindow(data, timeWindow);
+
+        if (filteredData.length === 0) {
             return res.status(404).send('No data found for the specified range');
         }
 
         if (format === 'csv') {
             try {
-                const csv = json2csv(results);
+                const csv = json2csv(filteredData);
                 res.header('Content-Type', 'text/csv');
                 res.attachment(`${table}-report-${Date.now()}.csv`);
                 res.send(csv);
@@ -37,13 +76,13 @@ exports.generateReport = async (req, res) => {
         } else if (format === 'excel') {
             const workbook = new excel.Workbook();
             const worksheet = workbook.addWorksheet('Report');
-            const keys = Object.keys(results[0]);
+            const keys = Object.keys(filteredData[0]);
 
             keys.forEach((key, index) => {
                 worksheet.cell(1, index + 1).string(key);
             });
 
-            results.forEach((row, rowIndex) => {
+            filteredData.forEach((row, rowIndex) => {
                 keys.forEach((key, colIndex) => {
                     worksheet.cell(rowIndex + 2, colIndex + 1).string(String(row[key]));
                 });
@@ -71,7 +110,7 @@ exports.generateReport = async (req, res) => {
                 align: 'center',
             });
 
-            results.forEach((row, rowIndex) => {
+            filteredData.forEach((row, rowIndex) => {
                 doc.text(`\nRow ${rowIndex + 1}`);
                 Object.keys(row).forEach((key) => {
                     doc.text(`${key}: ${row[key]}`);
