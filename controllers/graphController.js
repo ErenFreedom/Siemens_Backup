@@ -1,5 +1,5 @@
 const db = require('../config/db');
-const moment = require('moment'); // Ensure moment is installed using npm install moment
+const moment = require('moment');
 
 const getStartTime = (filter) => {
     const now = moment();
