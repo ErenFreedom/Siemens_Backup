@@ -21,24 +21,43 @@ const getStartTime = (filter) => {
     }
 };
 
-const getDataAndMetrics = (table, filter, callback) => {
-    const startTime = getStartTime(filter);
-    const query = `SELECT id, value, timestamp FROM ${table} ORDER BY id ASC`;
+const getDataAndMetrics = (callback) => {
+    const query = `SELECT value, timestamp FROM temp ORDER BY id ASC`;
 
     db.query(query, (err, results) => {
         if (err) {
-            console.error(`Error fetching data from table ${table}:`, err);
+            console.error(`Error fetching data from table temp:`, err);
             return callback(err);
         }
 
-        // Filter data in the backend based on timestamp
-        const filteredResults = results.filter(row => moment(row.timestamp).isAfter(startTime));
-
-        if (filteredResults.length === 0) {
+        if (results.length === 0) {
             return callback(null, { data: [], metrics: {} });
         }
 
-        const values = filteredResults.map(row => row.value);
+        const data = results.map(row => ({
+            value: row.value,
+            timestamp: row.timestamp
+        }));
+
+        callback(null, data);
+    });
+};
+
+exports.getTempData = (req, res) => {
+    const { filter } = req.params;
+    const startTime = getStartTime(filter);
+
+    getDataAndMetrics((err, data) => {
+        if (err) return res.status(500).send('Error fetching temperature data');
+
+        // Filter data based on the start time
+        const filteredData = data.filter(row => moment(row.timestamp).isAfter(startTime));
+
+        if (filteredData.length === 0) {
+            return res.json({ data: [], metrics: {} });
+        }
+
+        const values = filteredData.map(row => row.value);
         const sum = values.reduce((a, b) => a + b, 0);
         const average = (sum / values.length).toFixed(2);
         const max = Math.max(...values).toFixed(2);
@@ -56,14 +75,6 @@ const getDataAndMetrics = (table, filter, callback) => {
             stddev
         };
 
-        callback(null, { data: filteredResults, metrics });
-    });
-};
-
-exports.getTempData = (req, res) => {
-    const { filter } = req.params;
-    getDataAndMetrics('temp', filter, (err, result) => {
-        if (err) return res.status(500).send('Error fetching temperature data');
-        res.json(result);
+        res.json({ data: filteredData, metrics });
     });
 };
