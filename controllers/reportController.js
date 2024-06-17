@@ -51,8 +51,11 @@ exports.generateReport = async (req, res) => {
     const { table, timeWindow, format } = req.body;
 
     if (!table || !timeWindow || !format) {
+        console.log('Missing required parameters:', { table, timeWindow, format });
         return res.status(400).send('Missing required parameters');
     }
+
+    console.log('Parameters received:', { table, timeWindow, format });
 
     fetchAllData(table, (err, data) => {
         if (err) return res.status(500).send('Error fetching data');
@@ -60,8 +63,11 @@ exports.generateReport = async (req, res) => {
         const filteredData = filterDataByTimeWindow(data, timeWindow);
 
         if (filteredData.length === 0) {
+            console.log('No data found for the specified range');
             return res.status(404).send('No data found for the specified range');
         }
+
+        console.log('Filtered data:', filteredData);
 
         if (format === 'csv') {
             try {
