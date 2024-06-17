@@ -46,6 +46,7 @@ const filterData = (data, timeWindow) => {
             return data;
     }
 
+    console.log(`Filtering data from startTime: ${startTime}`);
     return data.filter(item => new Date(item.timestamp) >= startTime);
 };
 
@@ -56,6 +57,20 @@ const getFilteredData = (req, res, timeWindow) => {
         const filteredData = filterData(data, timeWindow);
 
         const values = filteredData.map(item => item.value);
+        if (values.length === 0) {
+            return res.json({
+                data: [],
+                metrics: {
+                    average: 'NaN',
+                    max: '-Infinity',
+                    min: 'Infinity',
+                    range: '-Infinity',
+                    variance: 'NaN',
+                    stddev: 'NaN'
+                }
+            });
+        }
+
         const sum = values.reduce((a, b) => a + b, 0);
         const average = (sum / values.length).toFixed(2);
         const max = Math.max(...values).toFixed(2);
