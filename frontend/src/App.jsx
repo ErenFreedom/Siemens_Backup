@@ -9,6 +9,7 @@ import Temperature from './components/ConfigTabs/Temperature';
 import Pressure from './components/ConfigTabs/Pressure';
 import Rh from './components/ConfigTabs/Rh';
 import Humidity from './components/ConfigTabs/Humidity';
+import Report from './components/report/Report'; // Importing the Report component
 
 function App() {
   return (
@@ -23,6 +24,7 @@ function App() {
         <Route path="/pressure/:userId" element={<Pressure />} />
         <Route path="/rh/:userId" element={<Rh />} />
         <Route path="/humidity/:userId" element={<Humidity />} />
+        <Route path="/report/:userId" element={<Report />} /> {/* Adding the report route */}
       </Routes>
     </Router>
   );

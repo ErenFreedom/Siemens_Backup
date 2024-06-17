@@ -54,6 +54,11 @@ const DashboardPage = () => {
                     <p>Updated At: {data.humidity?.timestamp}</p>
                   </div>
                 </Link>
+                <Link to={`/report/${userId}`} className="rectangle-link"> {/* Add report link */}
+                  <div className="rectangle report-button">
+                    <p>Generate Report</p>
+                  </div>
+                </Link>
               </>
             ) : (
               <p>Loading data...</p>
