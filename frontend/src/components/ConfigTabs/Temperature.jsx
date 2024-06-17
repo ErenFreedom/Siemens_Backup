@@ -11,6 +11,7 @@ import {
   Legend,
   ResponsiveContainer
 } from 'recharts';
+import './ConfigTabs.css'; // Import the common CSS file
 
 const Temperature = () => {
   const [filter, setFilter] = useState('1day'); // Default filter
@@ -37,7 +38,7 @@ const Temperature = () => {
   return (
     <div className="config-content">
       <h3>Temperature Details</h3>
-      <select value={filter} onChange={handleFilterChange}>
+      <select className="filter-select" value={filter} onChange={handleFilterChange}>
         <option value="1day">Last 1 day</option>
         <option value="1week">Last 1 week</option>
         <option value="1month">Last 1 month</option>
@@ -45,7 +46,7 @@ const Temperature = () => {
       {error && <p className="error">{error}</p>}
       {tempData && tempData.data.length ? (
         <>
-          <ResponsiveContainer width="100%" height={400}>
+          <ResponsiveContainer width="100%" height={400} className="chart-container">
             <LineChart
               data={tempData.data}
               margin={{
@@ -60,13 +61,13 @@ const Temperature = () => {
               <Line type="monotone" dataKey="value" stroke="#8884d8" activeDot={{ r: 8 }} />
             </LineChart>
           </ResponsiveContainer>
-          <div>
-            <p>Average: {tempData.metrics.average}</p>
-            <p>Max: {tempData.metrics.max}</p>
-            <p>Min: {tempData.metrics.min}</p>
-            <p>Range: {tempData.metrics.range}</p>
-            <p>Variance: {tempData.metrics.variance}</p>
-            <p>Standard Deviation: {tempData.metrics.stddev}</p>
+          <div className="metrics">
+            <p><strong>Average:</strong> {tempData.metrics.average}</p>
+            <p><strong>Max:</strong> {tempData.metrics.max}</p>
+            <p><strong>Min:</strong> {tempData.metrics.min}</p>
+            <p><strong>Range:</strong> {tempData.metrics.range}</p>
+            <p><strong>Variance:</strong> {tempData.metrics.variance}</p>
+            <p><strong>Standard Deviation:</strong> {tempData.metrics.stddev}</p>
           </div>
         </>
       ) : (
