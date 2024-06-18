@@ -81,63 +81,68 @@ exports.editAccount = async (req, res) => {
     const { newPassword } = req.body;
     const userId = req.user.userId;
 
-    const hashedPassword = await bcrypt.hash(newPassword, 10);
-    
-    // Begin transaction
-    db.beginTransaction(err => {
-        if (err) {
-            console.error('Transaction error:', err);
-            return res.status(500).send('Transaction error');
-        }
-
-        const deleteQuery = 'DELETE FROM users WHERE id = ?';
-        db.query(deleteQuery, [userId], (err) => {
+    try {
+        const hashedPassword = await bcrypt.hash(newPassword, 10);
+        
+        // Begin transaction
+        db.beginTransaction(err => {
             if (err) {
-                console.error('Error deleting user:', err);
-                return db.rollback(() => {
-                    res.status(500).send('Error deleting user');
-                });
+                console.error('Transaction error:', err);
+                return res.status(500).send('Transaction error');
             }
 
-            const selectQuery = 'SELECT email, username FROM users WHERE id = ?';
-            db.query(selectQuery, [userId], (err, results) => {
-                if (err || results.length === 0) {
+            const deleteQuery = 'DELETE FROM users WHERE id = ?';
+            db.query(deleteQuery, [userId], (err) => {
+                if (err) {
+                    console.error('Error deleting user:', err);
                     return db.rollback(() => {
-                        res.status(500).send('Error fetching user details');
+                        res.status(500).send('Error deleting user');
                     });
                 }
 
-                const user = results[0];
-                const insertQuery = 'INSERT INTO users (id, email, username, password) VALUES (?, ?, ?, ?)';
-                db.query(insertQuery, [userId, user.email, user.username, hashedPassword], (err) => {
-                    if (err) {
-                        console.error('Error inserting user:', err);
+                const selectQuery = 'SELECT email, username FROM users WHERE id = ?';
+                db.query(selectQuery, [userId], (err, results) => {
+                    if (err || results.length === 0) {
+                        console.error('Error fetching user details:', err);
                         return db.rollback(() => {
-                            res.status(500).send('Error inserting user');
+                            res.status(500).send('Error fetching user details');
                         });
                     }
 
-                    // Commit transaction
-                    db.commit(err => {
+                    const user = results[0];
+                    const insertQuery = 'INSERT INTO users (id, email, username, password) VALUES (?, ?, ?, ?)';
+                    db.query(insertQuery, [userId, user.email, user.username, hashedPassword], (err) => {
                         if (err) {
-                            console.error('Transaction commit error:', err);
+                            console.error('Error inserting user:', err);
                             return db.rollback(() => {
-                                res.status(500).send('Transaction commit error');
+                                res.status(500).send('Error inserting user');
                             });
                         }
 
-                        // Create a notification
-                        const message = 'Your account password has been updated.';
-                        createNotification(userId, 'account_update', message);
+                        // Commit transaction
+                        db.commit(err => {
+                            if (err) {
+                                console.error('Transaction commit error:', err);
+                                return db.rollback(() => {
+                                    res.status(500).send('Transaction commit error');
+                                });
+                            }
 
-                        res.status(200).send('Account updated successfully');
+                            // Create a notification
+                            const message = 'Your account password has been updated.';
+                            createNotification(userId, 'account_update', message);
+
+                            res.status(200).send('Account updated successfully');
+                        });
                     });
                 });
             });
         });
-    });
+    } catch (err) {
+        console.error('Error updating account:', err);
+        res.status(500).send('Server error');
+    }
 };
-
 
 // Get Current User Details
 exports.getCurrentUserDetails = (req, res) => {
