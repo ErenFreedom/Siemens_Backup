@@ -11,7 +11,6 @@ const Report = () => {
   const [documentType, setDocumentType] = useState('');
 
   const handleGenerateReport = async () => {
-    const token = localStorage.getItem('authToken'); // Assuming the token is stored in local storage
     try {
       console.log('Sending request with:', {
         table,
@@ -24,9 +23,6 @@ const Report = () => {
         timeWindow: specificTime || timeRange,
         format: documentType,
       }, {
-        headers: {
-          Authorization: `Bearer ${token}`
-        },
         responseType: 'blob',
       });
 
@@ -80,7 +76,6 @@ const Report = () => {
         <label htmlFor="documentType">Select Document Type:</label>
         <select id="documentType" value={documentType} onChange={(e) => setDocumentType(e.target.value)}>
           <option value="">Select...</option>
-          <option value="pdf">PDF</option>
           <option value="xml">XML</option>
           <option value="excel">Excel</option>
           <option value="csv">CSV</option>

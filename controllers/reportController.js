@@ -1,4 +1,3 @@
-const puppeteer = require('puppeteer');
 const db = require('../config/db');
 const json2csv = require('json2csv').parse;
 const excel = require('excel4node');
@@ -57,7 +56,7 @@ exports.generateReport = async (req, res) => {
 
     console.log('Parameters received:', { table, timeWindow, format });
 
-    fetchAllData(table, async (err, data) => {
+    fetchAllData(table, (err, data) => {
         if (err) return res.status(500).send('Error fetching data');
 
         const filteredData = filterDataByTimeWindow(data, timeWindow);
@@ -107,43 +106,6 @@ exports.generateReport = async (req, res) => {
                     fs.unlinkSync(tempFilePath);
                 });
             });
-        } else if (format === 'pdf') {
-            try {
-                const browser = await puppeteer.launch({
-                    args: ['--no-sandbox', '--disable-setuid-sandbox'],
-                });
-                const page = await browser.newPage();
-                
-                // Create HTML content for the PDF
-                const htmlContent = `
-                    <html>
-                        <head>
-                            <title>Report for ${table}</title>
-                        </head>
-                        <body>
-                            <h1>Report for ${table}</h1>
-                            ${filteredData.map((row, rowIndex) => `
-                                <div>
-                                    <h3>Row ${rowIndex + 1}</h3>
-                                    ${Object.keys(row).map(key => `<p>${key}: ${row[key]}</p>`).join('')}
-                                </div>
-                            `).join('')}
-                        </body>
-                    </html>
-                `;
-
-                await page.setContent(htmlContent);
-                const pdfBuffer = await page.pdf({ format: 'A4' });
-
-                await browser.close();
-
-                res.header('Content-Type', 'application/pdf');
-                res.attachment(`${table}-report-${Date.now()}.pdf`);
-                res.send(pdfBuffer);
-            } catch (err) {
-                console.error('Error generating PDF:', err);
-                res.status(500).send('Error generating PDF');
-            }
         } else if (format === 'xml') {
             try {
                 let xml = `<?xml version="1.0" encoding="UTF-8"?>\n<report>\n`;
