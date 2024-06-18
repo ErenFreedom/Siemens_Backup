@@ -1,11 +1,8 @@
 const db = require('../config/db');
 const bcrypt = require('bcrypt');
-const { check, validationResult } = require('express-validator');
-require('dotenv').config();
 
 // Logout user
 exports.logout = (req, res) => {
-    // Simply clear the token on the client-side to logout
     res.status(200).send('Logout successful');
 };
 
@@ -14,9 +11,13 @@ exports.deleteAccount = async (req, res) => {
     const { password } = req.body;
     const userId = req.user.userId;
 
+    console.log('Request received to delete account');
+    console.log(`User ID: ${userId}, Password: ${password}`);
+
     const query = 'SELECT password FROM users WHERE id = ?';
     db.query(query, [userId], async (err, results) => {
         if (err || results.length === 0) {
+            console.error('User not found:', err);
             return res.status(400).send('User not found.');
         }
 
@@ -24,6 +25,7 @@ exports.deleteAccount = async (req, res) => {
         const isMatch = await bcrypt.compare(password, user.password);
 
         if (!isMatch) {
+            console.error('Incorrect password.');
             return res.status(400).send('Incorrect password.');
         }
 
