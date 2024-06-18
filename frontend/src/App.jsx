@@ -4,7 +4,7 @@ import LandingPage from './components/LandingPage/LandingPage';
 import RegisterPage from './components/RegisterPage/RegisterPage';
 import LoginPage from './components/LoginPage/LoginPage';
 import OtpPage from './components/OtpPage/OtpPage';
-import OtpLoginPage from './components/OtpLoginPage/OtpLoginPage'; // Importing the new OTP Login Page
+import OtpLoginPage from './components/OtpPage/OtpLoginPage'; // Importing the new OTP Login Page
 import DashboardPage from './components/DashboardPage/DashboardPage';
 import Temperature from './components/ConfigTabs/Temperature';
 import Pressure from './components/ConfigTabs/Pressure';
