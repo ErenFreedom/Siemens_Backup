@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import './Account.css';
 
 const Account = () => {
   const { userId } = useParams();
+  const navigate = useNavigate();
   const [currentUsername, setCurrentUsername] = useState('');
   const [newUsername, setNewUsername] = useState('');
   const [currentEmail, setCurrentEmail] = useState('');
@@ -12,10 +13,15 @@ const Account = () => {
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [passwordPrompt, setPasswordPrompt] = useState(true);
+  const [passwordInput, setPasswordInput] = useState('');
 
   useEffect(() => {
-    // Fetch current user details and set them
-    axios.get(`${process.env.REACT_APP_API_URL}/user/${userId}`)
+    if (passwordPrompt) return;
+
+    axios.get(`${process.env.REACT_APP_API_URL}/user/${userId}`, {
+      headers: { Authorization: `Bearer ${localStorage.getItem('authToken')}` }
+    })
       .then(response => {
         const user = response.data;
         setCurrentUsername(user.username);
@@ -24,12 +30,58 @@ const Account = () => {
       .catch(error => {
         console.error('Error fetching user details:', error);
       });
-  }, [userId]);
+  }, [userId, passwordPrompt]);
+
+  const handlePasswordCheck = () => {
+    axios.post(`${process.env.REACT_APP_API_URL}/check-password`, {
+      password: passwordInput
+    }, {
+      headers: { Authorization: `Bearer ${localStorage.getItem('authToken')}` }
+    })
+      .then(() => {
+        setPasswordPrompt(false);
+      })
+      .catch(error => {
+        console.error('Error verifying password:', error);
+        alert('Invalid password');
+      });
+  };
 
   const handleSaveChanges = () => {
-    // Implement save changes logic here
-    console.log('Saving changes:', { newUsername, newEmail, currentPassword, newPassword, confirmPassword });
+    axios.put(`${process.env.REACT_APP_API_URL}/edit-account`, {
+      email: newEmail || currentEmail,
+      username: newUsername || currentUsername,
+      currentPassword: passwordInput,
+      newPassword
+    }, {
+      headers: { Authorization: `Bearer ${localStorage.getItem('authToken')}` }
+    })
+      .then(response => {
+        alert('Account updated successfully');
+        navigate(`/dashboard/${userId}`);
+      })
+      .catch(error => {
+        console.error('Error updating account:', error);
+        alert('Failed to update account');
+      });
   };
+
+  if (passwordPrompt) {
+    return (
+      <div className="password-prompt-container">
+        <div className="password-prompt-form">
+          <h2>Enter Current Password</h2>
+          <input
+            type="password"
+            placeholder="Current Password"
+            value={passwordInput}
+            onChange={(e) => setPasswordInput(e.target.value)}
+          />
+          <button onClick={handlePasswordCheck}>Submit</button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="account-page-container">
@@ -72,8 +124,9 @@ const Account = () => {
         <input
           type="password"
           id="currentPassword"
-          value={currentPassword}
-          onChange={(e) => setCurrentPassword(e.target.value)}
+          value={passwordInput}
+          onChange={(e) => setPasswordInput(e.target.value)}
+          disabled
         />
 
         <label htmlFor="newPassword">New Password:</label>
