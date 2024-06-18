@@ -51,15 +51,24 @@ const OtpPage = () => {
     try {
       console.log(`Verifying OTP for ${otpType}`);
       console.log(`Email: ${email}, OTP: ${otp.join('')}`);
+      let url = '';
+
       if (otpType === 'registration') {
-        const response = await axios.post(`${process.env.REACT_APP_API_URL}/verify-registration`, { email, otp: otp.join('') });
-        console.log('Registration verification response:', response.data);
+        url = `${process.env.REACT_APP_API_URL}/verify-registration`;
+      } else if (otpType === 'login') {
+        url = `${process.env.REACT_APP_API_URL}/verify-login`;
+      }
+
+      console.log(`URL: ${url}`);
+
+      const response = await axios.post(url, { email, otp: otp.join('') });
+      console.log(`Response: ${JSON.stringify(response.data)}`);
+
+      if (otpType === 'registration') {
         setMessage(response.data);
         navigate('/login');
       } else if (otpType === 'login') {
-        const response = await axios.post(`${process.env.REACT_APP_API_URL}/verify-login`, { email, otp: otp.join('') });
         const { token } = response.data;
-        console.log('Login verification response:', response.data);
         localStorage.setItem('authToken', token);
         navigate(`/dashboard/${userId}`);
       }
