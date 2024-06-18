@@ -19,6 +19,7 @@ const latestDataRoutes = require('./routes/latestDataRoutes');
 const reportRoutes = require('./routes/reportRoutes'); // Add reportRoutes here
 const graphRoutes = require('./routes/graphRoutes');
 const notificationRoutes = require('./routes/notificationRoutes');
+const accountRoutes = require('./routes/accountRoutes'); // Add accountRoutes here
 
 app.use(bodyParser.json());
 app.use(helmet());
@@ -38,6 +39,7 @@ app.use('/api', latestDataRoutes); // Adding the new route for latest data
 app.use('/api', reportRoutes); // Adding the new route for report generation
 app.use('/api', graphRoutes); // Adding the new route for graph data
 app.use('/api', notificationRoutes); // Adding the new route for notifications
+app.use('/api', accountRoutes); // Adding the new account routes
 
 // Socket.io connection
 io.on('connection', (socket) => {
