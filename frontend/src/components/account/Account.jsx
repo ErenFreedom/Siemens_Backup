@@ -1,17 +1,34 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
+import axios from 'axios';
 import './Account.css';
 
 const Account = () => {
   const { userId } = useParams();
-  const [username, setUsername] = useState('');
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [currentUsername, setCurrentUsername] = useState('');
+  const [newUsername, setNewUsername] = useState('');
+  const [currentEmail, setCurrentEmail] = useState('');
+  const [newEmail, setNewEmail] = useState('');
+  const [currentPassword, setCurrentPassword] = useState('');
+  const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+
+  useEffect(() => {
+    // Fetch current user details and set them
+    axios.get(`${process.env.REACT_APP_API_URL}/user/${userId}`)
+      .then(response => {
+        const user = response.data;
+        setCurrentUsername(user.username);
+        setCurrentEmail(user.email);
+      })
+      .catch(error => {
+        console.error('Error fetching user details:', error);
+      });
+  }, [userId]);
 
   const handleSaveChanges = () => {
     // Implement save changes logic here
-    console.log('Saving changes:', { username, email, password, confirmPassword });
+    console.log('Saving changes:', { newUsername, newEmail, currentPassword, newPassword, confirmPassword });
   };
 
   return (
@@ -19,31 +36,55 @@ const Account = () => {
       <div className="account-form">
         <h2>Edit Account</h2>
 
-        <label htmlFor="username">Username:</label>
+        <label htmlFor="currentUsername">Current Username:</label>
         <input
           type="text"
-          id="username"
-          value={username}
-          onChange={(e) => setUsername(e.target.value)}
+          id="currentUsername"
+          value={currentUsername}
+          disabled
         />
 
-        <label htmlFor="email">Registered Email:</label>
+        <label htmlFor="newUsername">New Username:</label>
+        <input
+          type="text"
+          id="newUsername"
+          value={newUsername}
+          onChange={(e) => setNewUsername(e.target.value)}
+        />
+
+        <label htmlFor="currentEmail">Current Registered Email:</label>
         <input
           type="email"
-          id="email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
+          id="currentEmail"
+          value={currentEmail}
+          disabled
         />
 
-        <label htmlFor="password">New Password:</label>
+        <label htmlFor="newEmail">New Email:</label>
+        <input
+          type="email"
+          id="newEmail"
+          value={newEmail}
+          onChange={(e) => setNewEmail(e.target.value)}
+        />
+
+        <label htmlFor="currentPassword">Current Password:</label>
         <input
           type="password"
-          id="password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
+          id="currentPassword"
+          value={currentPassword}
+          onChange={(e) => setCurrentPassword(e.target.value)}
         />
 
-        <label htmlFor="confirmPassword">Confirm Password:</label>
+        <label htmlFor="newPassword">New Password:</label>
+        <input
+          type="password"
+          id="newPassword"
+          value={newPassword}
+          onChange={(e) => setNewPassword(e.target.value)}
+        />
+
+        <label htmlFor="confirmPassword">Confirm New Password:</label>
         <input
           type="password"
           id="confirmPassword"
