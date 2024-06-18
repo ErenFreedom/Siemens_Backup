@@ -17,5 +17,4 @@ router.put('/account/edit', [
     check('username', 'Username is required').notEmpty()
 ], accountController.editAccount);
 
-
 module.exports = router;

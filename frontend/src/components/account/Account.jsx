@@ -65,6 +65,9 @@ const Account = () => {
         <div className="account-page-container">
             {!verified ? (
                 <div className="otp-verification-form">
+                    <h2>Generate OTP to your registered email</h2>
+                    <button onClick={generateOTP}>Send OTP</button>
+
                     <h2>Enter OTP</h2>
                     <input
                         type="text"

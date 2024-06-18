@@ -34,31 +34,40 @@ exports.generateOTP = async (req, res) => {
 
 // Verify OTP and complete actions
 exports.verifyOTP = async (req, res) => {
-    const { email, otp } = req.body;
+    const { otp } = req.body;
     const userId = req.user.id;
 
-    const checkOtpQuery = 'SELECT * FROM otps WHERE email = ? AND otp = ?';
-    db.query(checkOtpQuery, [email, otp], async (err, results) => {
+    const query = 'SELECT email FROM users WHERE id = ?';
+    db.query(query, [userId], (err, results) => {
         if (err || results.length === 0) {
-            console.error(`Invalid or expired OTP for email ${email}`);
-            return res.status(400).send('Invalid or expired OTP.');
+            return res.status(500).send('Error fetching user email');
         }
 
-        const otpData = results[0];
-        if (new Date() > new Date(otpData.expires_at)) {
-            console.error(`Expired OTP for email ${email}`);
-            return res.status(400).send('Invalid or expired OTP.');
-        }
+        const email = results[0].email;
 
-        // Fetch user details
-        const query = 'SELECT username, email FROM users WHERE id = ?';
-        db.query(query, [userId], (err, results) => {
+        const checkOtpQuery = 'SELECT * FROM otps WHERE email = ? AND otp = ?';
+        db.query(checkOtpQuery, [email, otp], async (err, results) => {
             if (err || results.length === 0) {
-                return res.status(500).send('Error fetching user details');
+                console.error(`Invalid or expired OTP for email ${email}`);
+                return res.status(400).send('Invalid or expired OTP.');
             }
 
-            const user = results[0];
-            res.status(200).json({ username: user.username, email: user.email });
+            const otpData = results[0];
+            if (new Date() > new Date(otpData.expires_at)) {
+                console.error(`Expired OTP for email ${email}`);
+                return res.status(400).send('Invalid or expired OTP.');
+            }
+
+            // Fetch user details
+            const userQuery = 'SELECT username, email FROM users WHERE id = ?';
+            db.query(userQuery, [userId], (err, results) => {
+                if (err || results.length === 0) {
+                    return res.status(500).send('Error fetching user details');
+                }
+
+                const user = results[0];
+                res.status(200).json({ username: user.username, email: user.email });
+            });
         });
     });
 };
