@@ -91,7 +91,7 @@ exports.editAccount = async (req, res) => {
         const message = 'Your account password has been updated.';
         createNotification(userId, 'account_update', message);
 
-        res.status(200).send('Account updated successfully');
+        res.status(200).json({ message: 'Account updated successfully', userId });
     });
 };
 
