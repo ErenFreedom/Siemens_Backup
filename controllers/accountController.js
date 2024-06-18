@@ -76,36 +76,22 @@ exports.editAccount = async (req, res) => {
         return res.status(400).json({ errors: errors.array() });
     }
 
-    const { currentPassword, newPassword } = req.body;
+    const { newPassword } = req.body;
     const userId = req.user.userId;
 
-    const query = 'SELECT password FROM users WHERE id = ?';
-    db.query(query, [userId], async (err, results) => {
-        if (err || results.length === 0) {
-            return res.status(400).send('User not found.');
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+    const updateQuery = 'UPDATE users SET password = ? WHERE id = ?';
+    db.query(updateQuery, [hashedPassword, userId], (err, results) => {
+        if (err) {
+            console.error('Error updating account:', err);
+            return res.status(500).send('Error updating account');
         }
 
-        const user = results[0];
-        const isMatch = await bcrypt.compare(currentPassword, user.password);
+        // Create a notification
+        const message = 'Your account password has been updated.';
+        createNotification(userId, 'account_update', message);
 
-        if (!isMatch) {
-            return res.status(400).send('Current password is incorrect.');
-        }
-
-        const hashedPassword = await bcrypt.hash(newPassword, 10);
-        const updateQuery = 'UPDATE users SET password = ? WHERE id = ?';
-        db.query(updateQuery, [hashedPassword, userId], (err, results) => {
-            if (err) {
-                console.error('Error updating account:', err);
-                return res.status(500).send('Error updating account');
-            }
-
-            // Create a notification
-            const message = 'Your account password has been updated.';
-            createNotification(userId, 'account_update', message);
-
-            res.status(200).send('Account updated successfully');
-        });
+        res.status(200).send('Account updated successfully');
     });
 };
 

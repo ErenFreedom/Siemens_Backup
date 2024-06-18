@@ -5,7 +5,6 @@ import './Account.css';
 
 const Account = () => {
     const [newPassword, setNewPassword] = useState('');
-    const [currentPassword, setCurrentPassword] = useState('');
     const [currentUsername, setCurrentUsername] = useState('');
     const [currentEmail, setCurrentEmail] = useState('');
     const navigate = useNavigate();
@@ -33,7 +32,6 @@ const Account = () => {
         try {
             const token = localStorage.getItem('authToken');
             const response = await axios.put(`${process.env.REACT_APP_API_URL}/account/edit`, {
-                currentPassword,
                 newPassword
             }, {
                 headers: {
@@ -62,13 +60,6 @@ const Account = () => {
                     type="email"
                     value={currentEmail}
                     disabled
-                />
-                <label>Current Password</label>
-                <input
-                    type="password"
-                    value={currentPassword}
-                    onChange={(e) => setCurrentPassword(e.target.value)}
-                    placeholder="Current Password"
                 />
                 <label>New Password</label>
                 <input
