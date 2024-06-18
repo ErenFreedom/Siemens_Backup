@@ -3,7 +3,8 @@ import axios from 'axios';
 import './Account.css';
 
 const Account = () => {
-    const [currentPassword, setCurrentPassword] = useState('');
+    const [email, setEmail] = useState('');
+    const [otp, setOtp] = useState('');
     const [verified, setVerified] = useState(false);
     const [newUsername, setNewUsername] = useState('');
     const [newEmail, setNewEmail] = useState('');
@@ -11,42 +12,42 @@ const Account = () => {
     const [currentUsername, setCurrentUsername] = useState('');
     const [currentEmail, setCurrentEmail] = useState('');
 
-    const verifyPassword = async () => {
+    const generateOTP = async () => {
         try {
-            const token = localStorage.getItem('authToken');
-            const response = await axios.post(`${process.env.REACT_APP_API_URL}/account/verify-password`, {
-                password: currentPassword
-            }, {
-                headers: {
-                    Authorization: `Bearer ${token}`
-                }
+            const response = await axios.post(`${process.env.REACT_APP_API_URL}/account/generate-otp`, {
+                email
+            });
+            console.log(response.data);
+        } catch (error) {
+            console.error('Error generating OTP:', error);
+        }
+    };
+
+    const verifyOTP = async () => {
+        try {
+            const response = await axios.post(`${process.env.REACT_APP_API_URL}/account/verify-otp`, {
+                email,
+                otp
             });
             if (response.status === 200) {
                 setVerified(true);
-                // Fetch current username and email after password verification
+                // Fetch current username and email after OTP verification
                 const userResponse = await axios.get(`${process.env.REACT_APP_API_URL}/user`, {
-                    headers: {
-                        Authorization: `Bearer ${token}`
-                    }
+                    params: { email }
                 });
                 setCurrentUsername(userResponse.data.username);
                 setCurrentEmail(userResponse.data.email);
             }
         } catch (error) {
-            console.error('Error verifying password:', error);
+            console.error('Error verifying OTP:', error);
         }
     };
 
     const handleEditAccount = async () => {
-        const token = localStorage.getItem('authToken');
         try {
             const response = await axios.put(`${process.env.REACT_APP_API_URL}/account/edit`, {
                 email: newEmail,
                 username: newUsername
-            }, {
-                headers: {
-                    Authorization: `Bearer ${token}`
-                }
             });
             console.log('Account updated successfully:', response);
         } catch (error) {
@@ -55,15 +56,10 @@ const Account = () => {
     };
 
     const handleChangePassword = async () => {
-        const token = localStorage.getItem('authToken');
         try {
             const response = await axios.put(`${process.env.REACT_APP_API_URL}/account/change-password`, {
                 oldPassword: currentPassword,
                 newPassword: newPassword
-            }, {
-                headers: {
-                    Authorization: `Bearer ${token}`
-                }
             });
             console.log('Password changed successfully:', response);
         } catch (error) {
@@ -74,15 +70,24 @@ const Account = () => {
     return (
         <div className="account-page-container">
             {!verified ? (
-                <div className="verify-password-form">
-                    <h2>Enter Current Password</h2>
+                <div className="otp-verification-form">
+                    <h2>Enter Your Email</h2>
                     <input
-                        type="password"
-                        value={currentPassword}
-                        onChange={(e) => setCurrentPassword(e.target.value)}
-                        placeholder="Current Password"
+                        type="email"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        placeholder="Email"
                     />
-                    <button onClick={verifyPassword}>Submit</button>
+                    <button onClick={generateOTP}>Send OTP</button>
+
+                    <h2>Enter OTP</h2>
+                    <input
+                        type="text"
+                        value={otp}
+                        onChange={(e) => setOtp(e.target.value)}
+                        placeholder="OTP"
+                    />
+                    <button onClick={verifyOTP}>Verify OTP</button>
                 </div>
             ) : (
                 <div className="account-form">
