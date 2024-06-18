@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import './OtpLoginPage.css';
+import './otpLoginPage.css';
 import logo from '../../assets/logo.png';
 import otpImage from '../../assets/otpimage.png';
 
