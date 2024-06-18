@@ -11,6 +11,7 @@ const Account = () => {
     const [newPassword, setNewPassword] = useState('');
     const [currentUsername, setCurrentUsername] = useState('');
     const [currentEmail, setCurrentEmail] = useState('');
+    const [currentPassword, setCurrentPassword] = useState(''); // Added state for current password
 
     const generateOTP = async () => {
         try {
