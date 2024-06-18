@@ -5,8 +5,10 @@ const accountController = require('../controllers/accountController');
 const authenticateToken = require('../middlewares/authenticateToken');
 
 router.post('/account/logout', authenticateToken, accountController.logout);
-router.delete('/account/delete', authenticateToken, [
-    check('password', 'Password is required').notEmpty()
-], accountController.deleteAccount);
+router.post('/account/generate-otp', authenticateToken, accountController.generateOTP);
+router.post('/account/verify-otp', authenticateToken, [
+    check('otp', 'OTP is required').notEmpty()
+], accountController.verifyOTP);
+router.delete('/account/delete', authenticateToken, accountController.deleteAccount);
 
 module.exports = router;

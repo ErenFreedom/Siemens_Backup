@@ -9,7 +9,6 @@ const OtpAccount = () => {
   const [otp, setOtp] = useState(new Array(6).fill(''));
   const [timeLeft, setTimeLeft] = useState(120);
   const [error, setError] = useState('');
-  const [message, setMessage] = useState('');
   const navigate = useNavigate();
   const location = useLocation();
   const userId = new URLSearchParams(location.search).get('userId');
@@ -48,7 +47,7 @@ const OtpAccount = () => {
   const handleVerify = async () => {
     const token = localStorage.getItem('authToken');
     try {
-      const response = await axios.post(
+      await axios.post(
         `${process.env.REACT_APP_API_URL}/account/verify-otp`,
         { otp: otp.join('') },
         {
@@ -57,8 +56,16 @@ const OtpAccount = () => {
           },
         }
       );
-      console.log('OTP verified successfully:', response.data);
-      navigate(`/edit-account/${userId}`);
+      await axios.delete(
+        `${process.env.REACT_APP_API_URL}/account/delete`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          }
+        }
+      );
+      localStorage.removeItem('authToken');
+      navigate('/');
     } catch (error) {
       console.error('Error verifying OTP:', error);
       setError('Invalid or expired OTP');
@@ -101,7 +108,6 @@ const OtpAccount = () => {
           VERIFY
         </button>
         {error && <p className="error">{error}</p>}
-        {message && <p className="message">{message}</p>}
       </div>
     </div>
   );

@@ -28,24 +28,20 @@ const DashboardHeader = () => {
   };
 
   const handleDeleteAccount = async () => {
-    const password = prompt('Please enter your password to delete the account:');
-    if (!password) return;
-
     const token = localStorage.getItem('authToken');
     try {
-      await axios.delete(
-        `${process.env.REACT_APP_API_URL}/account/delete`,
+      await axios.post(
+        `${process.env.REACT_APP_API_URL}/account/generate-otp`,
+        {},
         {
           headers: {
             Authorization: `Bearer ${token}`,
           },
-          data: { password } // Ensure password is sent in the request body
         }
       );
-      localStorage.removeItem('authToken');
-      window.location.href = '/';
+      window.location.href = `/otp-account?userId=${userId}`;
     } catch (error) {
-      console.error('Error deleting account:', error);
+      console.error('Error generating OTP:', error);
     }
   };
 
