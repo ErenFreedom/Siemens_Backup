@@ -8,10 +8,8 @@ const Account = () => {
     const [verified, setVerified] = useState(false);
     const [newUsername, setNewUsername] = useState('');
     const [newEmail, setNewEmail] = useState('');
-    const [newPassword, setNewPassword] = useState('');
     const [currentUsername, setCurrentUsername] = useState('');
     const [currentEmail, setCurrentEmail] = useState('');
-    const [currentPassword, setCurrentPassword] = useState(''); // Added state for current password
 
     const generateOTP = async () => {
         try {
@@ -53,18 +51,6 @@ const Account = () => {
             console.log('Account updated successfully:', response);
         } catch (error) {
             console.error('Error updating account:', error);
-        }
-    };
-
-    const handleChangePassword = async () => {
-        try {
-            const response = await axios.put(`${process.env.REACT_APP_API_URL}/account/change-password`, {
-                oldPassword: currentPassword,
-                newPassword: newPassword
-            });
-            console.log('Password changed successfully:', response);
-        } catch (error) {
-            console.error('Error changing password:', error);
         }
     };
 
@@ -119,22 +105,7 @@ const Account = () => {
                         onChange={(e) => setNewEmail(e.target.value)}
                         placeholder="New Email"
                     />
-                    <label>Current Password</label>
-                    <input
-                        type="password"
-                        value={currentPassword}
-                        onChange={(e) => setCurrentPassword(e.target.value)}
-                        placeholder="Current Password"
-                    />
-                    <label>New Password</label>
-                    <input
-                        type="password"
-                        value={newPassword}
-                        onChange={(e) => setNewPassword(e.target.value)}
-                        placeholder="New Password"
-                    />
                     <button onClick={handleEditAccount}>Save Changes</button>
-                    <button onClick={handleChangePassword}>Change Password</button>
                 </div>
             )}
         </div>
