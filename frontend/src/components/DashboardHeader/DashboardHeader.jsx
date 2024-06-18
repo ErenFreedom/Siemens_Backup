@@ -1,11 +1,29 @@
 import React from 'react';
-import { Link, useParams } from 'react-router-dom';
+import { Link, useParams, useNavigate } from 'react-router-dom';
 import { FaBell, FaUserCircle } from 'react-icons/fa';
+import axios from 'axios';
 import logo from '../../assets/logo.png'; // Ensure the path to the logo is correct
 import './DashboardHeader.css';
 
 const DashboardHeader = () => {
   const { userId } = useParams();
+  const navigate = useNavigate();
+
+  const handleEditAccount = async () => {
+    try {
+      const token = localStorage.getItem('authToken');
+      const response = await axios.post(`${process.env.REACT_APP_API_URL}/account/generate-otp`, {}, {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
+      if (response.status === 200) {
+        navigate('/otp-account'); // Navigate to OTP account page
+      }
+    } catch (error) {
+      console.error('Error generating OTP:', error);
+    }
+  };
 
   return (
     <div className="header-container">
@@ -28,7 +46,7 @@ const DashboardHeader = () => {
         <div className="profile-dropdown">
           <FaUserCircle className="icon" />
           <div className="dropdown-content">
-            <Link to={`/otp-account`}>Edit Account</Link> {/* Navigate to otp-account */}
+            <button onClick={handleEditAccount}>Edit Account</button>
             <Link to="/logout">Logout</Link>
             <Link to="/delete-account">Delete Account</Link>
           </div>
