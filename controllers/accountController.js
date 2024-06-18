@@ -71,6 +71,7 @@ exports.verifyOTP = async (req, res) => {
 
 // Edit Account
 // Edit Account
+// Edit Account
 exports.editAccount = async (req, res) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
@@ -81,30 +82,62 @@ exports.editAccount = async (req, res) => {
     const userId = req.user.userId;
 
     const hashedPassword = await bcrypt.hash(newPassword, 10);
-    const updateQuery = 'UPDATE users SET password = ? WHERE id = ?';
-    db.query(updateQuery, [hashedPassword, userId], (err) => {
+    
+    // Begin transaction
+    db.beginTransaction(err => {
         if (err) {
-            console.error('Error updating account:', err);
-            return res.status(500).send('Error updating account');
+            console.error('Transaction error:', err);
+            return res.status(500).send('Transaction error');
         }
 
-        // Create a notification
-        const message = 'Your account password has been updated.';
-        createNotification(userId, 'account_update', message);
-
-        const selectQuery = 'SELECT email, username FROM users WHERE id = ?';
-        db.query(selectQuery, [userId], (err, results) => {
-            if (err || results.length === 0) {
-                return res.status(500).send('Error fetching user details');
+        const deleteQuery = 'DELETE FROM users WHERE id = ?';
+        db.query(deleteQuery, [userId], (err) => {
+            if (err) {
+                console.error('Error deleting user:', err);
+                return db.rollback(() => {
+                    res.status(500).send('Error deleting user');
+                });
             }
 
-            const user = results[0];
-            const token = jwt.sign({ email: user.email, userId }, secretKey, { expiresIn: '1h' });
+            const selectQuery = 'SELECT email, username FROM users WHERE id = ?';
+            db.query(selectQuery, [userId], (err, results) => {
+                if (err || results.length === 0) {
+                    return db.rollback(() => {
+                        res.status(500).send('Error fetching user details');
+                    });
+                }
 
-            res.status(200).json({ token, userId, username: user.username });
+                const user = results[0];
+                const insertQuery = 'INSERT INTO users (id, email, username, password) VALUES (?, ?, ?, ?)';
+                db.query(insertQuery, [userId, user.email, user.username, hashedPassword], (err) => {
+                    if (err) {
+                        console.error('Error inserting user:', err);
+                        return db.rollback(() => {
+                            res.status(500).send('Error inserting user');
+                        });
+                    }
+
+                    // Commit transaction
+                    db.commit(err => {
+                        if (err) {
+                            console.error('Transaction commit error:', err);
+                            return db.rollback(() => {
+                                res.status(500).send('Transaction commit error');
+                            });
+                        }
+
+                        // Create a notification
+                        const message = 'Your account password has been updated.';
+                        createNotification(userId, 'account_update', message);
+
+                        res.status(200).send('Account updated successfully');
+                    });
+                });
+            });
         });
     });
 };
+
 
 // Get Current User Details
 exports.getCurrentUserDetails = (req, res) => {

@@ -32,16 +32,16 @@ const Account = () => {
     const handleEditAccount = async () => {
         try {
             const token = localStorage.getItem('authToken');
-            const response = await axios.put(`${process.env.REACT_APP_API_URL}/account/edit`, {
+            await axios.put(`${process.env.REACT_APP_API_URL}/account/edit`, {
                 newPassword
             }, {
                 headers: {
                     Authorization: `Bearer ${token}`
                 }
             });
-            console.log('Account updated successfully:', response);
-            localStorage.setItem('authToken', response.data.token); // Update the token
-            navigate(`/dashboard/${response.data.userId}`); // Redirect to the dashboard
+            console.log('Account updated successfully');
+            localStorage.removeItem('authToken'); // Remove token
+            navigate('/login'); // Redirect to the login page
         } catch (error) {
             console.error('Error updating account:', error);
         }
