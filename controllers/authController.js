@@ -1,3 +1,4 @@
+// authController.js
 const db = require('../config/db');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
@@ -9,6 +10,7 @@ const secretKey = process.env.SECRET_KEY;
 
 // Register a new user
 exports.register = async (req, res) => {
+    console.log('Register function called');
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
         return res.status(400).json({ errors: errors.array() });
@@ -46,8 +48,8 @@ exports.register = async (req, res) => {
 
 // Verify OTP and complete registration
 exports.verifyRegistration = async (req, res) => {
+    console.log('Verify Registration function called');
     const { email, otp } = req.body;
-    console.log(`Verifying OTP for registration`);
     console.log(`Email: ${email}, OTP: ${otp}`);
 
     const checkOtpQuery = 'SELECT * FROM otps WHERE email = ? AND otp = ?';
@@ -85,6 +87,7 @@ exports.verifyRegistration = async (req, res) => {
 
 // Login user
 exports.login = (req, res) => {
+    console.log('Login function called');
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
         return res.status(400).json({ errors: errors.array() });
@@ -122,6 +125,7 @@ exports.login = (req, res) => {
 
 // Verify OTP and complete login
 exports.verifyLogin = async (req, res) => {
+    console.log('Verify Login function called');
     const { email, otp } = req.body;
     const query = 'SELECT * FROM users WHERE email = ?';
     db.query(query, [email], (err, results) => {
