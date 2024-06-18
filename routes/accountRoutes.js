@@ -13,7 +13,8 @@ router.post('/account/verify-otp', [
 
 // Edit Account
 router.put('/account/edit', [
-    check('password', 'Password is required').isLength({ min: 6 })
+    check('currentPassword', 'Current Password is required').isLength({ min: 6 }),
+    check('newPassword', 'New Password is required').isLength({ min: 6 })
 ], accountController.editAccount);
 
 // Get Current User Details

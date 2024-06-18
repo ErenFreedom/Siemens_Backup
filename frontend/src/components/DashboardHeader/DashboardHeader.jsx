@@ -28,7 +28,7 @@ const DashboardHeader = () => {
         <div className="profile-dropdown">
           <FaUserCircle className="icon" />
           <div className="dropdown-content">
-            <Link to={`/edit-account/${userId}`}>Edit Account</Link> {/* Updated the link */}
+            <Link to={`/otp-account?email=${userEmail}`}>Edit Account</Link> {/* Navigate to otp-account */}
             <Link to="/logout">Logout</Link>
             <Link to="/delete-account">Delete Account</Link>
           </div>

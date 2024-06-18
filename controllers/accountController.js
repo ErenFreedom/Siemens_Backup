@@ -64,7 +64,7 @@ exports.verifyOTP = async (req, res) => {
                 }
             });
 
-            res.status(200).json({ email, username });
+            res.status(200).json({ email, username, userId });
         });
     });
 };
@@ -76,22 +76,35 @@ exports.editAccount = async (req, res) => {
         return res.status(400).json({ errors: errors.array() });
     }
 
-    const { password } = req.body;
+    const { currentPassword, newPassword } = req.body;
     const userId = req.user.userId;
 
-    const hashedPassword = await bcrypt.hash(password, 10);
-    const updateQuery = 'UPDATE users SET password = ? WHERE id = ?';
-    db.query(updateQuery, [hashedPassword, userId], (err, results) => {
-        if (err) {
-            console.error('Error updating account:', err);
-            return res.status(500).send('Error updating account');
+    const query = 'SELECT password FROM users WHERE id = ?';
+    db.query(query, [userId], async (err, results) => {
+        if (err || results.length === 0) {
+            return res.status(400).send('User not found.');
         }
 
-        // Create a notification
-        const message = 'Your account password has been updated.';
-        createNotification(userId, 'account_update', message);
+        const user = results[0];
+        const validPassword = await bcrypt.compare(currentPassword, user.password);
+        if (!validPassword) {
+            return res.status(401).send('Current password is incorrect.');
+        }
 
-        res.status(200).json({ message: 'Account updated successfully', userId });
+        const hashedNewPassword = await bcrypt.hash(newPassword, 10);
+        const updateQuery = 'UPDATE users SET password = ? WHERE id = ?';
+        db.query(updateQuery, [hashedNewPassword, userId], (err) => {
+            if (err) {
+                console.error('Error updating account:', err);
+                return res.status(500).send('Error updating account');
+            }
+
+            // Create a notification
+            const message = 'Your account password has been updated.';
+            createNotification(userId, 'account_update', message);
+
+            res.status(200).send('Account updated successfully');
+        });
     });
 };
 
