@@ -25,7 +25,7 @@ const LoginPage = () => {
     try {
       const response = await axios.post(`${process.env.REACT_APP_API_URL}/login`, { identifier, password });
       const { email, userId } = response.data;
-      navigate('/otp', { state: { email, otpType: 'login', userId } });
+      navigate('/otp-login', { state: { email, otpType: 'login', userId } });
     } catch (error) {
       setError(error.response?.data || 'An error occurred');
     }

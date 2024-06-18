@@ -4,6 +4,7 @@ import LandingPage from './components/LandingPage/LandingPage';
 import RegisterPage from './components/RegisterPage/RegisterPage';
 import LoginPage from './components/LoginPage/LoginPage';
 import OtpPage from './components/OtpPage/OtpPage';
+import OtpLoginPage from './components/OtpLoginPage/OtpLoginPage'; // Importing the new OTP Login Page
 import DashboardPage from './components/DashboardPage/DashboardPage';
 import Temperature from './components/ConfigTabs/Temperature';
 import Pressure from './components/ConfigTabs/Pressure';
@@ -20,6 +21,7 @@ function App() {
         <Route path="/register" element={<RegisterPage />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/otp" element={<OtpPage />} />
+        <Route path="/otp-login" element={<OtpLoginPage />} /> {/* Adding the new OTP Login route */}
         <Route path="/dashboard/:userId" element={<DashboardPage />} />
         <Route path="/temperature/:userId" element={<Temperature />} />
         <Route path="/pressure/:userId" element={<Pressure />} />
