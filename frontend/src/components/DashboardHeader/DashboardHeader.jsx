@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { FaBell, FaUserCircle } from 'react-icons/fa';
 import logo from '../../assets/logo.png'; // Ensure the path to the logo is correct
@@ -6,13 +6,6 @@ import './DashboardHeader.css';
 
 const DashboardHeader = () => {
   const { userId } = useParams();
-  const [userEmail, setUserEmail] = useState('');
-
-  useEffect(() => {
-    // Fetch the email from localStorage or an API if needed
-    const email = localStorage.getItem('userEmail');
-    setUserEmail(email);
-  }, []);
 
   return (
     <div className="header-container">
@@ -35,7 +28,7 @@ const DashboardHeader = () => {
         <div className="profile-dropdown">
           <FaUserCircle className="icon" />
           <div className="dropdown-content">
-            <Link to={`/otp-account?email=${userEmail}`}>Edit Account</Link> {/* Navigate to otp-account */}
+            <Link to={`/otp-account`}>Edit Account</Link> {/* Navigate to otp-account */}
             <Link to="/logout">Logout</Link>
             <Link to="/delete-account">Delete Account</Link>
           </div>

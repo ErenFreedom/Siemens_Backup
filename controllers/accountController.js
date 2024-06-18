@@ -64,7 +64,7 @@ exports.verifyOTP = async (req, res) => {
                 }
             });
 
-            res.status(200).json({ email, username, userId });
+            res.status(200).json({ email, username });
         });
     });
 };
@@ -88,7 +88,7 @@ exports.editAccount = async (req, res) => {
         const user = results[0];
         const validPassword = await bcrypt.compare(currentPassword, user.password);
         if (!validPassword) {
-            return res.status(401).send('Current password is incorrect.');
+            return res.status(401).send('Invalid current password.');
         }
 
         const hashedNewPassword = await bcrypt.hash(newPassword, 10);
