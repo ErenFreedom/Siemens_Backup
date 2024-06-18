@@ -3,7 +3,6 @@ import axios from 'axios';
 import './Account.css';
 
 const Account = () => {
-    const [email, setEmail] = useState('');
     const [otp, setOtp] = useState('');
     const [verified, setVerified] = useState(false);
     const [newUsername, setNewUsername] = useState('');
@@ -13,8 +12,11 @@ const Account = () => {
 
     const generateOTP = async () => {
         try {
-            const response = await axios.post(`${process.env.REACT_APP_API_URL}/account/generate-otp`, {
-                email
+            const token = localStorage.getItem('authToken');
+            const response = await axios.post(`${process.env.REACT_APP_API_URL}/account/generate-otp`, {}, {
+                headers: {
+                    Authorization: `Bearer ${token}`
+                }
             });
             console.log(response.data);
         } catch (error) {
@@ -24,18 +26,18 @@ const Account = () => {
 
     const verifyOTP = async () => {
         try {
+            const token = localStorage.getItem('authToken');
             const response = await axios.post(`${process.env.REACT_APP_API_URL}/account/verify-otp`, {
-                email,
                 otp
+            }, {
+                headers: {
+                    Authorization: `Bearer ${token}`
+                }
             });
             if (response.status === 200) {
                 setVerified(true);
-                // Fetch current username and email after OTP verification
-                const userResponse = await axios.get(`${process.env.REACT_APP_API_URL}/user`, {
-                    params: { email }
-                });
-                setCurrentUsername(userResponse.data.username);
-                setCurrentEmail(userResponse.data.email);
+                setCurrentUsername(response.data.username);
+                setCurrentEmail(response.data.email);
             }
         } catch (error) {
             console.error('Error verifying OTP:', error);
@@ -44,9 +46,14 @@ const Account = () => {
 
     const handleEditAccount = async () => {
         try {
+            const token = localStorage.getItem('authToken');
             const response = await axios.put(`${process.env.REACT_APP_API_URL}/account/edit`, {
                 email: newEmail,
                 username: newUsername
+            }, {
+                headers: {
+                    Authorization: `Bearer ${token}`
+                }
             });
             console.log('Account updated successfully:', response);
         } catch (error) {
@@ -58,15 +65,6 @@ const Account = () => {
         <div className="account-page-container">
             {!verified ? (
                 <div className="otp-verification-form">
-                    <h2>Enter Your Email</h2>
-                    <input
-                        type="email"
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
-                        placeholder="Email"
-                    />
-                    <button onClick={generateOTP}>Send OTP</button>
-
                     <h2>Enter OTP</h2>
                     <input
                         type="text"
