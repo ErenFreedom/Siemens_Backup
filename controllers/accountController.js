@@ -87,6 +87,7 @@ exports.editAccount = async (req, res) => {
 
         const user = results[0];
         const isMatch = await bcrypt.compare(currentPassword, user.password);
+
         if (!isMatch) {
             return res.status(400).send('Current password is incorrect.');
         }
