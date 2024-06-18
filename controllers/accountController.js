@@ -83,35 +83,37 @@ exports.editAccount = async (req, res) => {
 
     try {
         const hashedPassword = await bcrypt.hash(newPassword, 10);
-        
-        // Begin transaction
-        db.beginTransaction(err => {
-            if (err) {
-                console.error('Transaction error:', err);
-                return res.status(500).send('Transaction error');
+
+        // Fetch the user details
+        const selectQuery = 'SELECT email, username FROM users WHERE id = ?';
+        db.query(selectQuery, [userId], (err, results) => {
+            if (err || results.length === 0) {
+                console.error('Error fetching user details:', err || 'No user found');
+                return res.status(500).send('Error fetching user details');
             }
 
-            const deleteQuery = 'DELETE FROM users WHERE id = ?';
-            db.query(deleteQuery, [userId], (err) => {
+            const user = results[0];
+
+            // Begin transaction
+            db.beginTransaction(err => {
                 if (err) {
-                    console.error('Error deleting user:', err);
-                    return db.rollback(() => {
-                        res.status(500).send('Error deleting user');
-                    });
+                    console.error('Transaction error:', err);
+                    return res.status(500).send('Transaction error');
                 }
 
-                const selectQuery = 'SELECT email, username FROM users WHERE id = ?';
-                db.query(selectQuery, [userId], (err, results) => {
-                    if (err || results.length === 0) {
-                        console.error('Error fetching user details:', err);
+                // Delete the user
+                const deleteQuery = 'DELETE FROM users WHERE id = ?';
+                db.query(deleteQuery, [userId], (err) => {
+                    if (err) {
+                        console.error('Error deleting user:', err);
                         return db.rollback(() => {
-                            res.status(500).send('Error fetching user details');
+                            res.status(500).send('Error deleting user');
                         });
                     }
 
-                    const user = results[0];
-                    const insertQuery = 'INSERT INTO users (id, email, username, password) VALUES (?, ?, ?, ?)';
-                    db.query(insertQuery, [userId, user.email, user.username, hashedPassword], (err) => {
+                    // Reinsert the user with the new password
+                    const insertQuery = 'INSERT INTO users (email, username, password) VALUES (?, ?, ?)';
+                    db.query(insertQuery, [user.email, user.username, hashedPassword], (err) => {
                         if (err) {
                             console.error('Error inserting user:', err);
                             return db.rollback(() => {
@@ -143,7 +145,6 @@ exports.editAccount = async (req, res) => {
         res.status(500).send('Server error');
     }
 };
-
 // Get Current User Details
 exports.getCurrentUserDetails = (req, res) => {
     const userId = req.user.userId;
