@@ -40,6 +40,7 @@ const filterDataByTimeWindow = (data, timeWindow) => {
             startTime = new Date(endTime.getTime() - 30 * 24 * 60 * 60 * 1000);
             break;
         default:
+            console.error('Invalid timeWindow parameter:', timeWindow);
             return data;
     }
 
@@ -51,7 +52,7 @@ exports.generateReport = async (req, res) => {
     const { table, timeWindow, format } = req.body;
 
     if (!table || !timeWindow || !format) {
-        console.log('Missing required parameters:', { table, timeWindow, format });
+        console.error('Missing required parameters:', { table, timeWindow, format });
         return res.status(400).send('Missing required parameters');
     }
 
@@ -133,6 +134,7 @@ exports.generateReport = async (req, res) => {
                 });
             });
         } else {
+            console.error('Invalid format parameter:', format);
             res.status(400).send('Invalid format');
         }
     });
