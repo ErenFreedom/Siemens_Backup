@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { useNavigate } from 'react-router-dom'; // Import useNavigate
+import { useNavigate } from 'react-router-dom';
 import './Account.css';
 
 const Account = () => {
@@ -11,7 +11,7 @@ const Account = () => {
     const [newPassword, setNewPassword] = useState('');
     const [currentUsername, setCurrentUsername] = useState('');
     const [currentEmail, setCurrentEmail] = useState('');
-    const navigate = useNavigate(); // Initialize useNavigate
+    const navigate = useNavigate();
 
     useEffect(() => {
         if (verified) {
@@ -69,11 +69,12 @@ const Account = () => {
     const handleEditAccount = async () => {
         try {
             const token = localStorage.getItem('authToken');
-            const response = await axios.put(`${process.env.REACT_APP_API_URL}/account/edit`, {
-                email: newEmail || currentEmail,
-                username: newUsername || currentUsername,
-                password: newPassword
-            }, {
+            const updateData = {};
+            if (newEmail) updateData.email = newEmail;
+            if (newUsername) updateData.username = newUsername;
+            if (newPassword) updateData.password = newPassword;
+
+            const response = await axios.put(`${process.env.REACT_APP_API_URL}/account/edit`, updateData, {
                 headers: {
                     Authorization: `Bearer ${token}`
                 }
