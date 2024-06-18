@@ -6,8 +6,6 @@ import './Account.css';
 const Account = () => {
     const [otp, setOtp] = useState('');
     const [verified, setVerified] = useState(false);
-    const [newUsername, setNewUsername] = useState('');
-    const [newEmail, setNewEmail] = useState('');
     const [newPassword, setNewPassword] = useState('');
     const [currentUsername, setCurrentUsername] = useState('');
     const [currentEmail, setCurrentEmail] = useState('');
@@ -69,12 +67,9 @@ const Account = () => {
     const handleEditAccount = async () => {
         try {
             const token = localStorage.getItem('authToken');
-            const updateData = {};
-            if (newEmail) updateData.email = newEmail;
-            if (newUsername) updateData.username = newUsername;
-            if (newPassword) updateData.password = newPassword;
-
-            const response = await axios.put(`${process.env.REACT_APP_API_URL}/account/edit`, updateData, {
+            const response = await axios.put(`${process.env.REACT_APP_API_URL}/account/edit`, {
+                password: newPassword
+            }, {
                 headers: {
                     Authorization: `Bearer ${token}`
                 }
@@ -111,25 +106,11 @@ const Account = () => {
                         value={currentUsername}
                         disabled
                     />
-                    <label>New Username</label>
-                    <input
-                        type="text"
-                        value={newUsername}
-                        onChange={(e) => setNewUsername(e.target.value)}
-                        placeholder="New Username"
-                    />
                     <label>Current Email</label>
                     <input
                         type="email"
                         value={currentEmail}
                         disabled
-                    />
-                    <label>New Email</label>
-                    <input
-                        type="email"
-                        value={newEmail}
-                        onChange={(e) => setNewEmail(e.target.value)}
-                        placeholder="New Email"
                     />
                     <label>New Password</label>
                     <input
