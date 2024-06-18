@@ -17,13 +17,5 @@ router.put('/account/edit', [
     check('username', 'Username is required').notEmpty()
 ], accountController.editAccount);
 
-// Change Password
-router.put('/account/change-password', [
-    check('oldPassword', 'Old password is required').notEmpty(),
-    check('newPassword', 'New password is required').isLength({ min: 6 })
-], accountController.changePassword);
-
-// Delete Account
-router.delete('/account/delete', accountController.deleteAccount);
 
 module.exports = router;
