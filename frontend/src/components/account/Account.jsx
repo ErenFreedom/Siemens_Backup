@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import { useNavigate } from 'react-router-dom'; // Import useNavigate
 import './Account.css';
 
 const Account = () => {
@@ -10,6 +11,7 @@ const Account = () => {
     const [newPassword, setNewPassword] = useState('');
     const [currentUsername, setCurrentUsername] = useState('');
     const [currentEmail, setCurrentEmail] = useState('');
+    const navigate = useNavigate(); // Initialize useNavigate
 
     useEffect(() => {
         if (verified) {
@@ -77,6 +79,7 @@ const Account = () => {
                 }
             });
             console.log('Account updated successfully:', response);
+            navigate(`/dashboard/${response.data.userId}`); // Redirect to the dashboard
         } catch (error) {
             console.error('Error updating account:', error);
         }
