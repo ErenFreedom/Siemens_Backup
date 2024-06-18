@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const { check } = require('express-validator');
 const accountController = require('../controllers/accountController');
-const authenticateToken = require('../middlewares/authMiddleware');
+const authenticateToken = require('../middlewares/authenticateToken');
 
 // Generate OTP
 router.post('/account/generate-otp', authenticateToken, accountController.generateOTP);
