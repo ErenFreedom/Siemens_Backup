@@ -47,6 +47,7 @@ exports.register = async (req, res) => {
 // Verify OTP and complete registration
 exports.verifyRegistration = async (req, res) => {
     const { email, otp } = req.body;
+    console.log(`Verifying OTP for email: ${email}, OTP: ${otp}`);
     const checkOtpQuery = 'SELECT * FROM otps WHERE email = ? AND otp = ?';
     db.query(checkOtpQuery, [email, otp], async (err, results) => {
         if (err || results.length === 0) {
@@ -75,11 +76,11 @@ exports.verifyRegistration = async (req, res) => {
                 }
             });
 
+            console.log(`User registered successfully for email ${email}`);
             res.send('User registered successfully');
         });
     });
 };
-
 // Login user
 exports.login = (req, res) => {
     const errors = validationResult(req);
