@@ -86,14 +86,14 @@ exports.editAccount = async (req, res) => {
         }
 
         const user = results[0];
-        const validPassword = await bcrypt.compare(currentPassword, user.password);
-        if (!validPassword) {
-            return res.status(401).send('Invalid current password.');
+        const isMatch = await bcrypt.compare(currentPassword, user.password);
+        if (!isMatch) {
+            return res.status(400).send('Current password is incorrect.');
         }
 
-        const hashedNewPassword = await bcrypt.hash(newPassword, 10);
+        const hashedPassword = await bcrypt.hash(newPassword, 10);
         const updateQuery = 'UPDATE users SET password = ? WHERE id = ?';
-        db.query(updateQuery, [hashedNewPassword, userId], (err) => {
+        db.query(updateQuery, [hashedPassword, userId], (err, results) => {
             if (err) {
                 console.error('Error updating account:', err);
                 return res.status(500).send('Error updating account');

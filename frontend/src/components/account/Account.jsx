@@ -4,10 +4,10 @@ import { useNavigate } from 'react-router-dom';
 import './Account.css';
 
 const Account = () => {
-    const [currentPassword, setCurrentPassword] = useState('');
     const [newPassword, setNewPassword] = useState('');
     const [currentUsername, setCurrentUsername] = useState('');
     const [currentEmail, setCurrentEmail] = useState('');
+    const [currentPassword, setCurrentPassword] = useState('');
     const navigate = useNavigate();
 
     useEffect(() => {
