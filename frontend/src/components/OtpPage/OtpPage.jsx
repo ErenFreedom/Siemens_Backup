@@ -13,8 +13,6 @@ const OtpPage = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const email = location.state?.email;
-  const otpType = location.state?.otpType;
-  const userId = location.state?.userId;
 
   useEffect(() => {
     document.body.classList.add('otp-page-body');
@@ -49,29 +47,17 @@ const OtpPage = () => {
 
   const handleVerify = async () => {
     try {
-      console.log(`Verifying OTP for ${otpType}`);
+      console.log(`Verifying OTP for registration`);
       console.log(`Email: ${email}, OTP: ${otp.join('')}`);
-      let url = '';
-
-      if (otpType === 'registration') {
-        url = `${process.env.REACT_APP_API_URL}/verify-registration`;
-      } else if (otpType === 'login') {
-        url = `${process.env.REACT_APP_API_URL}/verify-login`;
-      }
+      const url = `${process.env.REACT_APP_API_URL}/verify-registration`;
 
       console.log(`URL: ${url}`);
 
       const response = await axios.post(url, { email, otp: otp.join('') });
       console.log(`Response: ${JSON.stringify(response.data)}`);
 
-      if (otpType === 'registration') {
-        setMessage(response.data);
-        navigate('/login');
-      } else if (otpType === 'login') {
-        const { token } = response.data;
-        localStorage.setItem('authToken', token);
-        navigate(`/dashboard/${userId}`);
-      }
+      setMessage(response.data);
+      navigate('/login');
     } catch (error) {
       console.error('Error verifying OTP:', error.response?.data || error.message);
       setError(error.response?.data || 'Invalid or expired OTP');
