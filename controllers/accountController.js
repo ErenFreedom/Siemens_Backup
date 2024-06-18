@@ -70,6 +70,7 @@ exports.verifyOTP = async (req, res) => {
 };
 
 // Edit Account
+// Edit Account
 exports.editAccount = async (req, res) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
@@ -81,7 +82,7 @@ exports.editAccount = async (req, res) => {
 
     const hashedPassword = await bcrypt.hash(newPassword, 10);
     const updateQuery = 'UPDATE users SET password = ? WHERE id = ?';
-    db.query(updateQuery, [hashedPassword, userId], (err, results) => {
+    db.query(updateQuery, [hashedPassword, userId], (err) => {
         if (err) {
             console.error('Error updating account:', err);
             return res.status(500).send('Error updating account');
@@ -91,7 +92,17 @@ exports.editAccount = async (req, res) => {
         const message = 'Your account password has been updated.';
         createNotification(userId, 'account_update', message);
 
-        res.status(200).send('Account updated successfully');
+        const selectQuery = 'SELECT email, username FROM users WHERE id = ?';
+        db.query(selectQuery, [userId], (err, results) => {
+            if (err || results.length === 0) {
+                return res.status(500).send('Error fetching user details');
+            }
+
+            const user = results[0];
+            const token = jwt.sign({ email: user.email, userId }, secretKey, { expiresIn: '1h' });
+
+            res.status(200).json({ token, userId, username: user.username });
+        });
     });
 };
 

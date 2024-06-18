@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import './Account.css';
 
 const Account = () => {
@@ -8,6 +8,7 @@ const Account = () => {
     const [currentUsername, setCurrentUsername] = useState('');
     const [currentEmail, setCurrentEmail] = useState('');
     const navigate = useNavigate();
+    const { userId } = useParams();
 
     useEffect(() => {
         fetchCurrentUserDetails();
@@ -39,6 +40,7 @@ const Account = () => {
                 }
             });
             console.log('Account updated successfully:', response);
+            localStorage.setItem('authToken', response.data.token); // Update the token
             navigate(`/dashboard/${response.data.userId}`); // Redirect to the dashboard
         } catch (error) {
             console.error('Error updating account:', error);
