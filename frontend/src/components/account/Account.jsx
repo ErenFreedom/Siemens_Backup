@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import './Account.css';
 
@@ -7,8 +7,30 @@ const Account = () => {
     const [verified, setVerified] = useState(false);
     const [newUsername, setNewUsername] = useState('');
     const [newEmail, setNewEmail] = useState('');
+    const [newPassword, setNewPassword] = useState('');
     const [currentUsername, setCurrentUsername] = useState('');
     const [currentEmail, setCurrentEmail] = useState('');
+
+    useEffect(() => {
+        if (verified) {
+            fetchCurrentUserDetails();
+        }
+    }, [verified]);
+
+    const fetchCurrentUserDetails = async () => {
+        try {
+            const token = localStorage.getItem('authToken');
+            const response = await axios.get(`${process.env.REACT_APP_API_URL}/account/current`, {
+                headers: {
+                    Authorization: `Bearer ${token}`
+                }
+            });
+            setCurrentUsername(response.data.username);
+            setCurrentEmail(response.data.email);
+        } catch (error) {
+            console.error('Error fetching current user details:', error);
+        }
+    };
 
     const generateOTP = async () => {
         try {
@@ -36,14 +58,6 @@ const Account = () => {
             });
             if (response.status === 200) {
                 setVerified(true);
-                // Fetch current username and email after OTP verification
-                const userResponse = await axios.get(`${process.env.REACT_APP_API_URL}/user`, {
-                    headers: {
-                        Authorization: `Bearer ${token}`
-                    }
-                });
-                setCurrentUsername(userResponse.data.username);
-                setCurrentEmail(userResponse.data.email);
             }
         } catch (error) {
             console.error('Error verifying OTP:', error);
@@ -54,8 +68,9 @@ const Account = () => {
         try {
             const token = localStorage.getItem('authToken');
             const response = await axios.put(`${process.env.REACT_APP_API_URL}/account/edit`, {
-                email: newEmail,
-                username: newUsername
+                email: newEmail || currentEmail,
+                username: newUsername || currentUsername,
+                password: newPassword
             }, {
                 headers: {
                     Authorization: `Bearer ${token}`
@@ -73,7 +88,7 @@ const Account = () => {
                 <div className="otp-verification-form">
                     <h2>Generate OTP</h2>
                     <button onClick={generateOTP}>Send OTP</button>
-                    
+
                     <h2>Enter OTP</h2>
                     <input
                         type="text"
@@ -111,6 +126,13 @@ const Account = () => {
                         value={newEmail}
                         onChange={(e) => setNewEmail(e.target.value)}
                         placeholder="New Email"
+                    />
+                    <label>New Password</label>
+                    <input
+                        type="password"
+                        value={newPassword}
+                        onChange={(e) => setNewPassword(e.target.value)}
+                        placeholder="New Password"
                     />
                     <button onClick={handleEditAccount}>Save Changes</button>
                 </div>

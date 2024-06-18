@@ -37,13 +37,13 @@ exports.verifyOTP = async (req, res) => {
     const { otp } = req.body;
     const userId = req.user.userId;
 
-    const query = 'SELECT email FROM users WHERE id = ?';
+    const query = 'SELECT email, username FROM users WHERE id = ?';
     db.query(query, [userId], (err, results) => {
         if (err || results.length === 0) {
             return res.status(400).send('User not found.');
         }
 
-        const email = results[0].email;
+        const { email, username } = results[0];
         const checkOtpQuery = 'SELECT * FROM otps WHERE email = ? AND otp = ?';
         db.query(checkOtpQuery, [email, otp], (err, results) => {
             if (err || results.length === 0) {
@@ -64,7 +64,7 @@ exports.verifyOTP = async (req, res) => {
                 }
             });
 
-            res.status(200).send({ email });
+            res.status(200).json({ email, username });
         });
     });
 };
@@ -76,11 +76,12 @@ exports.editAccount = async (req, res) => {
         return res.status(400).json({ errors: errors.array() });
     }
 
-    const { email, username } = req.body;
+    const { email, username, password } = req.body;
     const userId = req.user.userId;
 
-    const updateQuery = 'UPDATE users SET email = ?, username = ? WHERE id = ?';
-    db.query(updateQuery, [email, username, userId], (err, results) => {
+    const hashedPassword = await bcrypt.hash(password, 10);
+    const updateQuery = 'UPDATE users SET email = ?, username = ?, password = ? WHERE id = ?';
+    db.query(updateQuery, [email, username, hashedPassword, userId], (err, results) => {
         if (err) {
             console.error('Error updating account:', err);
             return res.status(500).send('Error updating account');
@@ -91,5 +92,20 @@ exports.editAccount = async (req, res) => {
         createNotification(userId, 'account_update', message);
 
         res.status(200).send('Account updated successfully');
+    });
+};
+
+// Get Current User Details
+exports.getCurrentUserDetails = (req, res) => {
+    const userId = req.user.userId;
+
+    const query = 'SELECT email, username FROM users WHERE id = ?';
+    db.query(query, [userId], (err, results) => {
+        if (err || results.length === 0) {
+            return res.status(400).send('User not found.');
+        }
+
+        const { email, username } = results[0];
+        res.status(200).json({ email, username });
     });
 };
