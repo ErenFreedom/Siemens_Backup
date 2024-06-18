@@ -29,19 +29,16 @@ const filterDataByTimeWindow = (data, timeWindow) => {
     const endTime = new Date(data[data.length - 1].timestamp);
     let startTime;
 
-    switch (timeWindow) {
-        case '1day':
-            startTime = new Date(endTime.getTime() - 24 * 60 * 60 * 1000);
-            break;
-        case '1week':
-            startTime = new Date(endTime.getTime() - 7 * 24 * 60 * 60 * 1000);
-            break;
-        case '1month':
-            startTime = new Date(endTime.getTime() - 30 * 24 * 60 * 60 * 1000);
-            break;
-        default:
-            console.error('Invalid timeWindow parameter:', timeWindow);
-            return data;
+    if (timeWindow.endsWith('hour')) {
+        const hours = parseInt(timeWindow.split('hour')[0]);
+        startTime = new Date(endTime.getTime() - hours * 60 * 60 * 1000);
+    } else if (timeWindow.endsWith('day')) {
+        const days = parseInt(timeWindow.split('day')[0]);
+        startTime = new Date(endTime.getTime() - days * 24 * 60 * 60 * 1000);
+    } else if (timeWindow === '1month') {
+        startTime = new Date(endTime.getTime() - 30 * 24 * 60 * 60 * 1000);
+    } else {
+        return data;
     }
 
     console.log(`Filtering data from startTime: ${startTime} to endTime: ${endTime}`);
@@ -52,7 +49,7 @@ exports.generateReport = async (req, res) => {
     const { table, timeWindow, format } = req.body;
 
     if (!table || !timeWindow || !format) {
-        console.error('Missing required parameters:', { table, timeWindow, format });
+        console.log('Missing required parameters:', { table, timeWindow, format });
         return res.status(400).send('Missing required parameters');
     }
 
@@ -134,7 +131,6 @@ exports.generateReport = async (req, res) => {
                 });
             });
         } else {
-            console.error('Invalid format parameter:', format);
             res.status(400).send('Invalid format');
         }
     });
