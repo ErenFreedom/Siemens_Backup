@@ -29,16 +29,18 @@ const filterDataByTimeWindow = (data, timeWindow) => {
     const endTime = new Date(data[data.length - 1].timestamp);
     let startTime;
 
-    if (timeWindow.endsWith('hour')) {
-        const hours = parseInt(timeWindow.split('hour')[0]);
-        startTime = new Date(endTime.getTime() - hours * 60 * 60 * 1000);
-    } else if (timeWindow.endsWith('day')) {
-        const days = parseInt(timeWindow.split('day')[0]);
-        startTime = new Date(endTime.getTime() - days * 24 * 60 * 60 * 1000);
-    } else if (timeWindow === '1month') {
-        startTime = new Date(endTime.getTime() - 30 * 24 * 60 * 60 * 1000);
-    } else {
-        return data;
+    switch (timeWindow) {
+        case '1day':
+            startTime = new Date(endTime.getTime() - 24 * 60 * 60 * 1000);
+            break;
+        case '1week':
+            startTime = new Date(endTime.getTime() - 7 * 24 * 60 * 60 * 1000);
+            break;
+        case '1month':
+            startTime = new Date(endTime.getTime() - 30 * 24 * 60 * 60 * 1000);
+            break;
+        default:
+            return data;
     }
 
     console.log(`Filtering data from startTime: ${startTime} to endTime: ${endTime}`);
@@ -106,30 +108,54 @@ exports.generateReport = async (req, res) => {
                 });
             });
         } else if (format === 'pdf') {
-            const doc = new PDFDocument();
-            const tempFilePath = `./${table}-report-${Date.now()}.pdf`;
-            doc.pipe(fs.createWriteStream(tempFilePath));
+            try {
+                const doc = new PDFDocument();
+                const tempFilePath = `./${table}-report-${Date.now()}.pdf`;
+                doc.pipe(fs.createWriteStream(tempFilePath));
 
-            doc.fontSize(12).text(`Report for ${table}`, {
-                align: 'center',
-            });
-
-            filteredData.forEach((row, rowIndex) => {
-                doc.text(`\nRow ${rowIndex + 1}`);
-                Object.keys(row).forEach((key) => {
-                    doc.text(`${key}: ${row[key]}`);
+                doc.fontSize(12).text(`Report for ${table}`, {
+                    align: 'center',
                 });
-            });
 
-            doc.end();
-            doc.on('finish', () => {
-                res.download(tempFilePath, (err) => {
-                    if (err) {
-                        console.error('Error sending PDF file:', err);
-                    }
-                    fs.unlinkSync(tempFilePath);
+                filteredData.forEach((row, rowIndex) => {
+                    doc.text(`\nRow ${rowIndex + 1}`);
+                    Object.keys(row).forEach((key) => {
+                        doc.text(`${key}: ${row[key]}`);
+                    });
                 });
-            });
+
+                doc.end();
+                doc.on('finish', () => {
+                    res.download(tempFilePath, (err) => {
+                        if (err) {
+                            console.error('Error sending PDF file:', err);
+                        }
+                        fs.unlinkSync(tempFilePath);
+                    });
+                });
+            } catch (err) {
+                console.error('Error generating PDF:', err);
+                res.status(500).send('Error generating PDF');
+            }
+        } else if (format === 'xml') {
+            try {
+                let xml = `<?xml version="1.0" encoding="UTF-8"?>\n<report>\n`;
+                filteredData.forEach(row => {
+                    xml += `  <entry>\n`;
+                    Object.keys(row).forEach(key => {
+                        xml += `    <${key}>${row[key]}</${key}>\n`;
+                    });
+                    xml += `  </entry>\n`;
+                });
+                xml += `</report>`;
+
+                res.header('Content-Type', 'application/xml');
+                res.attachment(`${table}-report-${Date.now()}.xml`);
+                res.send(xml);
+            } catch (err) {
+                console.error('Error generating XML:', err);
+                res.status(500).send('Error generating XML');
+            }
         } else {
             res.status(400).send('Invalid format');
         }
