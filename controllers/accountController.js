@@ -4,6 +4,26 @@ const { check, validationResult } = require('express-validator');
 require('dotenv').config();
 const { createNotification } = require('./notificationController');
 
+// Verify Password
+exports.verifyPassword = async (req, res) => {
+    const { password } = req.body;
+    const userId = req.user.id;
+
+    const query = 'SELECT * FROM users WHERE id = ?';
+    db.query(query, [userId], async (err, results) => {
+        if (err || results.length === 0) {
+            return res.status(401).send('Invalid credentials');
+        }
+        const user = results[0];
+        const validPassword = await bcrypt.compare(password, user.password);
+        if (!validPassword) {
+            return res.status(401).send('Invalid password');
+        }
+
+        res.status(200).send('Password verified successfully');
+    });
+};
+
 // Edit Account
 exports.editAccount = async (req, res) => {
     const errors = validationResult(req);

@@ -33,7 +33,7 @@ const Account = () => {
   }, [userId, passwordPrompt]);
 
   const handlePasswordCheck = () => {
-    axios.post(`${process.env.REACT_APP_API_URL}/check-password`, {
+    axios.post(`${process.env.REACT_APP_API_URL}/account/verify-password`, {
       password: passwordInput
     }, {
       headers: { Authorization: `Bearer ${localStorage.getItem('authToken')}` }
@@ -48,11 +48,9 @@ const Account = () => {
   };
 
   const handleSaveChanges = () => {
-    axios.put(`${process.env.REACT_APP_API_URL}/edit-account`, {
+    axios.put(`${process.env.REACT_APP_API_URL}/account/edit`, {
       email: newEmail || currentEmail,
-      username: newUsername || currentUsername,
-      currentPassword: passwordInput,
-      newPassword
+      username: newUsername || currentUsername
     }, {
       headers: { Authorization: `Bearer ${localStorage.getItem('authToken')}` }
     })

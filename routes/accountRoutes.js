@@ -4,6 +4,11 @@ const { check } = require('express-validator');
 const authenticateToken = require('../middlewares/authenticateToken');
 const accountController = require('../controllers/accountController');
 
+// Verify Password
+router.post('/account/verify-password', authenticateToken, [
+    check('password', 'Password is required').notEmpty(),
+], accountController.verifyPassword);
+
 // Edit Account
 router.put('/account/edit', authenticateToken, [
     check('email', 'Email is required').isEmail(),
