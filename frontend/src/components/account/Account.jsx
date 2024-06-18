@@ -36,8 +36,12 @@ const Account = () => {
             });
             if (response.status === 200) {
                 setVerified(true);
-                setCurrentUsername(response.data.username);
-                setCurrentEmail(response.data.email);
+                // Fetch current username and email after OTP verification
+                const userResponse = await axios.get(`${process.env.REACT_APP_API_URL}/user`, {
+                    params: { email: response.data.email }
+                });
+                setCurrentUsername(userResponse.data.username);
+                setCurrentEmail(userResponse.data.email);
             }
         } catch (error) {
             console.error('Error verifying OTP:', error);
@@ -65,9 +69,6 @@ const Account = () => {
         <div className="account-page-container">
             {!verified ? (
                 <div className="otp-verification-form">
-                    <h2>Generate OTP to your registered email</h2>
-                    <button onClick={generateOTP}>Send OTP</button>
-
                     <h2>Enter OTP</h2>
                     <input
                         type="text"

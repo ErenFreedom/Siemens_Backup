@@ -2,17 +2,17 @@ const db = require('../config/db');
 const bcrypt = require('bcrypt');
 const { check, validationResult } = require('express-validator');
 require('dotenv').config();
-const { createNotification } = require('./notificationController');
 const { generateOTP, sendOTPEmail } = require('../utils/otpGeneration');
+const { createNotification } = require('./notificationController');
 
-// Generate OTP for account actions
+// Generate OTP
 exports.generateOTP = async (req, res) => {
-    const userId = req.user.id;
+    const userId = req.user.userId;
 
     const query = 'SELECT email FROM users WHERE id = ?';
-    db.query(query, [userId], async (err, results) => {
+    db.query(query, [userId], (err, results) => {
         if (err || results.length === 0) {
-            return res.status(500).send('Error fetching user email');
+            return res.status(400).send('User not found.');
         }
 
         const email = results[0].email;
@@ -27,26 +27,25 @@ exports.generateOTP = async (req, res) => {
             }
             console.log(`OTP ${otp} stored for email ${email}`);
             await sendOTPEmail(email, otp);
-            res.status(200).send('OTP sent to your registered email.');
+            res.status(200).send('OTP sent to your email.');
         });
     });
 };
 
-// Verify OTP and complete actions
+// Verify OTP
 exports.verifyOTP = async (req, res) => {
     const { otp } = req.body;
-    const userId = req.user.id;
+    const userId = req.user.userId;
 
     const query = 'SELECT email FROM users WHERE id = ?';
     db.query(query, [userId], (err, results) => {
         if (err || results.length === 0) {
-            return res.status(500).send('Error fetching user email');
+            return res.status(400).send('User not found.');
         }
 
         const email = results[0].email;
-
         const checkOtpQuery = 'SELECT * FROM otps WHERE email = ? AND otp = ?';
-        db.query(checkOtpQuery, [email, otp], async (err, results) => {
+        db.query(checkOtpQuery, [email, otp], (err, results) => {
             if (err || results.length === 0) {
                 console.error(`Invalid or expired OTP for email ${email}`);
                 return res.status(400).send('Invalid or expired OTP.');
@@ -58,16 +57,14 @@ exports.verifyOTP = async (req, res) => {
                 return res.status(400).send('Invalid or expired OTP.');
             }
 
-            // Fetch user details
-            const userQuery = 'SELECT username, email FROM users WHERE id = ?';
-            db.query(userQuery, [userId], (err, results) => {
-                if (err || results.length === 0) {
-                    return res.status(500).send('Error fetching user details');
+            const deleteOtpQuery = 'DELETE FROM otps WHERE email = ?';
+            db.query(deleteOtpQuery, [email], (err) => {
+                if (err) {
+                    console.error('Error deleting OTP:', err);
                 }
-
-                const user = results[0];
-                res.status(200).json({ username: user.username, email: user.email });
             });
+
+            res.status(200).send({ email });
         });
     });
 };
@@ -80,7 +77,7 @@ exports.editAccount = async (req, res) => {
     }
 
     const { email, username } = req.body;
-    const userId = req.user.id;
+    const userId = req.user.userId;
 
     const updateQuery = 'UPDATE users SET email = ?, username = ? WHERE id = ?';
     db.query(updateQuery, [email, username, userId], (err, results) => {

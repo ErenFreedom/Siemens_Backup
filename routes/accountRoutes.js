@@ -2,17 +2,18 @@ const express = require('express');
 const router = express.Router();
 const { check } = require('express-validator');
 const accountController = require('../controllers/accountController');
+const authenticateToken = require('../middlewares/authenticateToken');
 
 // Generate OTP
-router.post('/account/generate-otp', accountController.generateOTP);
+router.post('/account/generate-otp', authenticateToken, accountController.generateOTP);
 
 // Verify OTP
-router.post('/account/verify-otp', [
+router.post('/account/verify-otp', authenticateToken, [
     check('otp', 'OTP is required').notEmpty()
 ], accountController.verifyOTP);
 
 // Edit Account
-router.put('/account/edit', [
+router.put('/account/edit', authenticateToken, [
     check('email', 'Email is required').isEmail(),
     check('username', 'Username is required').notEmpty()
 ], accountController.editAccount);
