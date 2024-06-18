@@ -1,7 +1,7 @@
+const puppeteer = require('puppeteer');
 const db = require('../config/db');
 const json2csv = require('json2csv').parse;
 const excel = require('excel4node');
-const PDFDocument = require('pdfkit');
 const fs = require('fs');
 
 const fetchAllData = (table, callback) => {
@@ -57,7 +57,7 @@ exports.generateReport = async (req, res) => {
 
     console.log('Parameters received:', { table, timeWindow, format });
 
-    fetchAllData(table, (err, data) => {
+    fetchAllData(table, async (err, data) => {
         if (err) return res.status(500).send('Error fetching data');
 
         const filteredData = filterDataByTimeWindow(data, timeWindow);
@@ -109,30 +109,35 @@ exports.generateReport = async (req, res) => {
             });
         } else if (format === 'pdf') {
             try {
-                const doc = new PDFDocument();
-                const tempFilePath = `./${table}-report-${Date.now()}.pdf`;
-                doc.pipe(fs.createWriteStream(tempFilePath));
+                const browser = await puppeteer.launch();
+                const page = await browser.newPage();
+                
+                // Create HTML content for the PDF
+                const htmlContent = `
+                    <html>
+                        <head>
+                            <title>Report for ${table}</title>
+                        </head>
+                        <body>
+                            <h1>Report for ${table}</h1>
+                            ${filteredData.map((row, rowIndex) => `
+                                <div>
+                                    <h3>Row ${rowIndex + 1}</h3>
+                                    ${Object.keys(row).map(key => `<p>${key}: ${row[key]}</p>`).join('')}
+                                </div>
+                            `).join('')}
+                        </body>
+                    </html>
+                `;
 
-                doc.fontSize(12).text(`Report for ${table}`, {
-                    align: 'center',
-                });
+                await page.setContent(htmlContent);
+                const pdfBuffer = await page.pdf({ format: 'A4' });
 
-                filteredData.forEach((row, rowIndex) => {
-                    doc.text(`\nRow ${rowIndex + 1}`);
-                    Object.keys(row).forEach((key) => {
-                        doc.text(`${key}: ${row[key]}`);
-                    });
-                });
+                await browser.close();
 
-                doc.end();
-                doc.on('finish', () => {
-                    res.download(tempFilePath, (err) => {
-                        if (err) {
-                            console.error('Error sending PDF file:', err);
-                        }
-                        fs.unlinkSync(tempFilePath);
-                    });
-                });
+                res.header('Content-Type', 'application/pdf');
+                res.attachment(`${table}-report-${Date.now()}.pdf`);
+                res.send(pdfBuffer);
             } catch (err) {
                 console.error('Error generating PDF:', err);
                 res.status(500).send('Error generating PDF');
