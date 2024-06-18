@@ -1,30 +1,11 @@
 import React from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { FaBell, FaUserCircle } from 'react-icons/fa';
-import axios from 'axios';
 import logo from '../../assets/logo.png';
 import './DashboardHeader.css';
 
 const DashboardHeader = () => {
   const { userId } = useParams();
-
-  const handleEditAccount = async () => {
-    const token = localStorage.getItem('authToken');
-    try {
-      await axios.post(
-        `${process.env.REACT_APP_API_URL}/account/generate-otp`,
-        {},
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-      window.location.href = `/otp-account?userId=${userId}`;
-    } catch (error) {
-      console.error('Error generating OTP:', error);
-    }
-  };
 
   return (
     <div className="header-container">
@@ -47,7 +28,6 @@ const DashboardHeader = () => {
         <div className="profile-dropdown">
           <FaUserCircle className="icon" />
           <div className="dropdown-content">
-            <button onClick={handleEditAccount}>Edit Account</button>
             <Link to="/logout">Logout</Link>
             <Link to="/delete-account">Delete Account</Link>
           </div>
