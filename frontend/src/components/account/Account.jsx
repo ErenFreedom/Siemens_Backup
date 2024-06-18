@@ -1,152 +1,138 @@
-import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import React, { useState } from 'react';
 import axios from 'axios';
 import './Account.css';
 
 const Account = () => {
-  const { userId } = useParams();
-  const navigate = useNavigate();
-  const [currentUsername, setCurrentUsername] = useState('');
-  const [newUsername, setNewUsername] = useState('');
-  const [currentEmail, setCurrentEmail] = useState('');
-  const [newEmail, setNewEmail] = useState('');
-  const [currentPassword, setCurrentPassword] = useState('');
-  const [newPassword, setNewPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
-  const [passwordPrompt, setPasswordPrompt] = useState(true);
-  const [passwordInput, setPasswordInput] = useState('');
+    const [currentPassword, setCurrentPassword] = useState('');
+    const [verified, setVerified] = useState(false);
+    const [newUsername, setNewUsername] = useState('');
+    const [newEmail, setNewEmail] = useState('');
+    const [newPassword, setNewPassword] = useState('');
+    const [currentUsername, setCurrentUsername] = useState('');
+    const [currentEmail, setCurrentEmail] = useState('');
 
-  useEffect(() => {
-    if (passwordPrompt) return;
+    const verifyPassword = async () => {
+        try {
+            const token = localStorage.getItem('authToken');
+            const response = await axios.post(`${process.env.REACT_APP_API_URL}/account/verify-password`, {
+                password: currentPassword
+            }, {
+                headers: {
+                    Authorization: `Bearer ${token}`
+                }
+            });
+            if (response.status === 200) {
+                setVerified(true);
+                // Fetch current username and email after password verification
+                const userResponse = await axios.get(`${process.env.REACT_APP_API_URL}/user`, {
+                    headers: {
+                        Authorization: `Bearer ${token}`
+                    }
+                });
+                setCurrentUsername(userResponse.data.username);
+                setCurrentEmail(userResponse.data.email);
+            }
+        } catch (error) {
+            console.error('Error verifying password:', error);
+        }
+    };
 
-    axios.get(`${process.env.REACT_APP_API_URL}/user/${userId}`, {
-      headers: { Authorization: `Bearer ${localStorage.getItem('authToken')}` }
-    })
-      .then(response => {
-        const user = response.data;
-        setCurrentUsername(user.username);
-        setCurrentEmail(user.email);
-      })
-      .catch(error => {
-        console.error('Error fetching user details:', error);
-      });
-  }, [userId, passwordPrompt]);
+    const handleEditAccount = async () => {
+        const token = localStorage.getItem('authToken');
+        try {
+            const response = await axios.put(`${process.env.REACT_APP_API_URL}/account/edit`, {
+                email: newEmail,
+                username: newUsername
+            }, {
+                headers: {
+                    Authorization: `Bearer ${token}`
+                }
+            });
+            console.log('Account updated successfully:', response);
+        } catch (error) {
+            console.error('Error updating account:', error);
+        }
+    };
 
-  const handlePasswordCheck = () => {
-    axios.post(`${process.env.REACT_APP_API_URL}/account/verify-password`, {
-      password: passwordInput
-    }, {
-      headers: { Authorization: `Bearer ${localStorage.getItem('authToken')}` }
-    })
-      .then(() => {
-        setPasswordPrompt(false);
-      })
-      .catch(error => {
-        console.error('Error verifying password:', error);
-        alert('Invalid password');
-      });
-  };
+    const handleChangePassword = async () => {
+        const token = localStorage.getItem('authToken');
+        try {
+            const response = await axios.put(`${process.env.REACT_APP_API_URL}/account/change-password`, {
+                oldPassword: currentPassword,
+                newPassword: newPassword
+            }, {
+                headers: {
+                    Authorization: `Bearer ${token}`
+                }
+            });
+            console.log('Password changed successfully:', response);
+        } catch (error) {
+            console.error('Error changing password:', error);
+        }
+    };
 
-  const handleSaveChanges = () => {
-    axios.put(`${process.env.REACT_APP_API_URL}/account/edit`, {
-      email: newEmail || currentEmail,
-      username: newUsername || currentUsername
-    }, {
-      headers: { Authorization: `Bearer ${localStorage.getItem('authToken')}` }
-    })
-      .then(response => {
-        alert('Account updated successfully');
-        navigate(`/dashboard/${userId}`);
-      })
-      .catch(error => {
-        console.error('Error updating account:', error);
-        alert('Failed to update account');
-      });
-  };
-
-  if (passwordPrompt) {
     return (
-      <div className="password-prompt-container">
-        <div className="password-prompt-form">
-          <h2>Enter Current Password</h2>
-          <input
-            type="password"
-            placeholder="Current Password"
-            value={passwordInput}
-            onChange={(e) => setPasswordInput(e.target.value)}
-          />
-          <button onClick={handlePasswordCheck}>Submit</button>
+        <div className="account-page-container">
+            {!verified ? (
+                <div className="verify-password-form">
+                    <h2>Enter Current Password</h2>
+                    <input
+                        type="password"
+                        value={currentPassword}
+                        onChange={(e) => setCurrentPassword(e.target.value)}
+                        placeholder="Current Password"
+                    />
+                    <button onClick={verifyPassword}>Submit</button>
+                </div>
+            ) : (
+                <div className="account-form">
+                    <h2>Edit Account</h2>
+                    <label>Current Username</label>
+                    <input
+                        type="text"
+                        value={currentUsername}
+                        disabled
+                    />
+                    <label>New Username</label>
+                    <input
+                        type="text"
+                        value={newUsername}
+                        onChange={(e) => setNewUsername(e.target.value)}
+                        placeholder="New Username"
+                    />
+                    <label>Current Email</label>
+                    <input
+                        type="email"
+                        value={currentEmail}
+                        disabled
+                    />
+                    <label>New Email</label>
+                    <input
+                        type="email"
+                        value={newEmail}
+                        onChange={(e) => setNewEmail(e.target.value)}
+                        placeholder="New Email"
+                    />
+                    <label>Current Password</label>
+                    <input
+                        type="password"
+                        value={currentPassword}
+                        onChange={(e) => setCurrentPassword(e.target.value)}
+                        placeholder="Current Password"
+                    />
+                    <label>New Password</label>
+                    <input
+                        type="password"
+                        value={newPassword}
+                        onChange={(e) => setNewPassword(e.target.value)}
+                        placeholder="New Password"
+                    />
+                    <button onClick={handleEditAccount}>Save Changes</button>
+                    <button onClick={handleChangePassword}>Change Password</button>
+                </div>
+            )}
         </div>
-      </div>
     );
-  }
-
-  return (
-    <div className="account-page-container">
-      <div className="account-form">
-        <h2>Edit Account</h2>
-
-        <label htmlFor="currentUsername">Current Username:</label>
-        <input
-          type="text"
-          id="currentUsername"
-          value={currentUsername}
-          disabled
-        />
-
-        <label htmlFor="newUsername">New Username:</label>
-        <input
-          type="text"
-          id="newUsername"
-          value={newUsername}
-          onChange={(e) => setNewUsername(e.target.value)}
-        />
-
-        <label htmlFor="currentEmail">Current Registered Email:</label>
-        <input
-          type="email"
-          id="currentEmail"
-          value={currentEmail}
-          disabled
-        />
-
-        <label htmlFor="newEmail">New Email:</label>
-        <input
-          type="email"
-          id="newEmail"
-          value={newEmail}
-          onChange={(e) => setNewEmail(e.target.value)}
-        />
-
-        <label htmlFor="currentPassword">Current Password:</label>
-        <input
-          type="password"
-          id="currentPassword"
-          value={passwordInput}
-          onChange={(e) => setPasswordInput(e.target.value)}
-          disabled
-        />
-
-        <label htmlFor="newPassword">New Password:</label>
-        <input
-          type="password"
-          id="newPassword"
-          value={newPassword}
-          onChange={(e) => setNewPassword(e.target.value)}
-        />
-
-        <label htmlFor="confirmPassword">Confirm New Password:</label>
-        <input
-          type="password"
-          id="confirmPassword"
-          value={confirmPassword}
-          onChange={(e) => setConfirmPassword(e.target.value)}
-        />
-
-        <button onClick={handleSaveChanges}>Save Changes</button>
-      </div>
-    </div>
-  );
 };
 
 export default Account;
