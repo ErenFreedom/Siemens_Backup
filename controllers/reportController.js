@@ -109,7 +109,9 @@ exports.generateReport = async (req, res) => {
             });
         } else if (format === 'pdf') {
             try {
-                const browser = await puppeteer.launch();
+                const browser = await puppeteer.launch({
+                    args: ['--no-sandbox', '--disable-setuid-sandbox'],
+                });
                 const page = await browser.newPage();
                 
                 // Create HTML content for the PDF
