@@ -1,27 +1,26 @@
 const express = require('express');
 const router = express.Router();
 const { check } = require('express-validator');
-const authenticateToken = require('../middlewares/authenticateToken');
 const accountController = require('../controllers/accountController');
 
 // Verify Password
-router.post('/account/verify-password', authenticateToken, [
+router.post('/account/verify-password',  [
     check('password', 'Password is required').notEmpty(),
 ], accountController.verifyPassword);
 
 // Edit Account
-router.put('/account/edit', authenticateToken, [
+router.put('/account/edit',  [
     check('email', 'Email is required').isEmail(),
     check('username', 'Username is required').notEmpty()
 ], accountController.editAccount);
 
 // Change Password
-router.put('/account/change-password', authenticateToken, [
+router.put('/account/change-password',  [
     check('oldPassword', 'Old password is required').notEmpty(),
     check('newPassword', 'New password is required').isLength({ min: 6 })
 ], accountController.changePassword);
 
 // Delete Account
-router.delete('/account/delete', authenticateToken, accountController.deleteAccount);
+router.delete('/account/delete', accountController.deleteAccount);
 
 module.exports = router;
