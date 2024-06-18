@@ -6,7 +6,7 @@ const authenticateToken = require('../middlewares/authenticateToken');
 
 router.post('/account/logout', authenticateToken, accountController.logout);
 router.delete('/account/delete', authenticateToken, [
-    check('password', 'Password is required').isLength({ min: 6 })
+    check('password', 'Password is required').notEmpty()
 ], accountController.deleteAccount);
 
 module.exports = router;

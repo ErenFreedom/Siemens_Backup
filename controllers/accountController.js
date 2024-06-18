@@ -1,5 +1,7 @@
 const db = require('../config/db');
 const bcrypt = require('bcrypt');
+const { check, validationResult } = require('express-validator');
+require('dotenv').config();
 
 // Logout user
 exports.logout = (req, res) => {

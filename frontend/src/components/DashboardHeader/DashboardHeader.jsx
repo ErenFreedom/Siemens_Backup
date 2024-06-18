@@ -36,10 +36,10 @@ const DashboardHeader = () => {
       await axios.delete(
         `${process.env.REACT_APP_API_URL}/account/delete`,
         {
-          data: { password },
           headers: {
             Authorization: `Bearer ${token}`,
           },
+          data: { password } // Ensure password is sent in the request body
         }
       );
       localStorage.removeItem('authToken');

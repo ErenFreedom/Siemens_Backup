@@ -39,7 +39,7 @@ app.use('/api', latestDataRoutes); // Adding the new route for latest data
 app.use('/api', reportRoutes); // Adding the new route for report generation
 app.use('/api', graphRoutes); // Adding the new route for graph data
 app.use('/api', notificationRoutes); // Adding the new route for notifications
-app.use('/api', accountRoutes); // Adding the new account routes
+app.use('/api', accountRoutes); // Adding the new route for account actions
 
 // Socket.io connection
 io.on('connection', (socket) => {
