@@ -1,6 +1,8 @@
+// routes/monitorRoutes.js
 const express = require('express');
 const router = express.Router();
 const monitorController = require('../controllers/monitorController');
+const db = require('../config/db');
 
 // Existing routes...
 
@@ -15,5 +17,7 @@ router.get('/notifications', (req, res) => {
         res.json(results.rows);
     });
 });
+
+router.delete('/notifications', monitorController.clearNotifications);
 
 module.exports = router;
