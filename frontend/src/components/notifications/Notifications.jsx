@@ -1,14 +1,22 @@
-import React from 'react';
-import { useSelector } from 'react-redux';
-import { Link } from 'react-router-dom';
+import React, { useEffect } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import { fetchNotifications } from '../../actions/notificationActions';
 import './Notifications.css';
 
 const Notifications = () => {
+  const dispatch = useDispatch();
   const notifications = useSelector((state) => state.notifications.notifications);
 
+  useEffect(() => {
+    const token = localStorage.getItem('authToken');
+    if (token) {
+      dispatch(fetchNotifications(token));
+    }
+  }, [dispatch]);
+
   return (
-    <div className="notifications-container">
-      <h1>Notifications</h1>
+    <div className="notifications-page">
+      <h2>Notifications</h2>
       <div className="notifications-list">
         {notifications.length === 0 ? (
           <p>No notifications available</p>
@@ -21,9 +29,7 @@ const Notifications = () => {
           ))
         )}
       </div>
-      <Link to="/dashboard">
-        <button className="back-to-dashboard">Back to Dashboard</button>
-      </Link>
+      <button className="back-button" onClick={() => window.history.back()}>Back to Dashboard</button>
     </div>
   );
 };

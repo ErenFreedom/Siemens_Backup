@@ -16,12 +16,3 @@ export const fetchNotifications = createAsyncThunk(
     }
   }
 );
-
-export const addNotification = createAsyncThunk(
-  'notifications/addNotification',
-  async (notification, { getState }) => {
-    const state = getState();
-    const notifications = state.notifications.notifications;
-    return [...notifications, notification];
-  }
-);

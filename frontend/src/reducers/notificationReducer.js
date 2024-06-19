@@ -1,5 +1,5 @@
 import { createSlice } from '@reduxjs/toolkit';
-import { fetchNotifications, addNotification } from '../actions/notificationActions';
+import { fetchNotifications } from '../actions/notificationActions';
 
 const notificationSlice = createSlice({
   name: 'notifications',
@@ -17,10 +17,6 @@ const notificationSlice = createSlice({
       .addCase(fetchNotifications.rejected, (state, action) => {
         state.notifications = [];
         state.error = action.error.message;
-      })
-      .addCase(addNotification.fulfilled, (state, action) => {
-        state.notifications = action.payload;
-        state.error = null;
       });
   },
 });
