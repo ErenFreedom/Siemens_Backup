@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { createAsyncThunk } from '@reduxjs/toolkit';
+import { createAsyncThunk, createAction } from '@reduxjs/toolkit';
 
 export const fetchNotifications = createAsyncThunk(
   'notifications/fetchNotifications',
@@ -16,3 +16,6 @@ export const fetchNotifications = createAsyncThunk(
     }
   }
 );
+
+// Action creator for adding a notification
+export const addNotification = createAction('notifications/addNotification');
