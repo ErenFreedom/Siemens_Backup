@@ -78,23 +78,23 @@ const DashboardHeader = () => {
   };
 
   return (
-    <div className="header-container">
-      <div className="logo-container">
-        <img src={logo} className="logo" alt="Platform Logo" />
-        <h1>IntelliMonitor</h1>
+    <div className="dashboard-header-container">
+      <div className="dashboard-logo-container">
+        <img src={logo} className="dashboard-logo" alt="Platform Logo" />
       </div>
-      <div className="header-options">
-        <div className="notification-dropdown" onClick={handleNotificationClick}>
-          <FaBell className={`icon ${notifications.length > 0 ? 'new-notification' : ''}`} />
+      <h1 className="intelli-monitor-heading">IntelliMonitor</h1>
+      <div className="dashboard-header-options">
+        <div className="dashboard-notification-dropdown" onClick={handleNotificationClick}>
+          <FaBell className={`dashboard-icon ${notifications.length > 0 ? 'new-notification' : ''}`} />
         </div>
-        <div className="report-button">
+        <div className="dashboard-report-button">
           <Link to={`/report/${userId}`}>
             <button>Generate Report</button>
           </Link>
         </div>
-        <div className="profile-dropdown">
-          <FaUserCircle className="icon" />
-          <div className="dropdown-content">
+        <div className="dashboard-profile-dropdown">
+          <FaUserCircle className="dashboard-icon" />
+          <div className="dashboard-dropdown-content">
             <button onClick={handleLogout}>Logout</button>
             <button onClick={handleDeleteAccount}>Delete Account</button>
           </div>

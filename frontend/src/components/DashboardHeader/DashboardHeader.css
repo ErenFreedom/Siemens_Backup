@@ -102,6 +102,18 @@
   color: red;
 }
 
+/* IntelliMonitor heading style */
+.intelli-monitor-heading {
+  position: absolute;
+  top: -50px; /* Adjust the value to position it above the header */
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 36px;
+  font-weight: bold;
+  color: white;
+  z-index: 11;
+}
+
 /* Media queries for smaller screens */
 
 /* For laptops */
