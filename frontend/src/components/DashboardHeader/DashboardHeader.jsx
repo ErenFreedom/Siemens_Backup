@@ -12,6 +12,7 @@ const DashboardHeader = () => {
 
   useEffect(() => {
     const token = localStorage.getItem('authToken');
+
     const fetchNotifications = async () => {
       try {
         const response = await axios.get(`${process.env.REACT_APP_API_URL}/notifications`, {

@@ -9,46 +9,52 @@ const THRESHOLDS = {
     rh: 60          // Relative Humidity threshold in percentage
 };
 
-exports.checkThresholds = (req, res) => {
+let lastCheckedIds = {
+    temp: 0,
+    pressure: 0,
+    humidity: 0,
+    rh: 0
+};
+
+const checkThresholds = () => {
     const tables = ['temp', 'pressure', 'humidity', 'rh'];
-    let completedRequests = 0;
 
     tables.forEach((table) => {
-        const query = `SELECT * FROM ${table} ORDER BY id DESC LIMIT 1`;
-        db.query(query, (err, results) => {
+        const query = `SELECT * FROM ${table} WHERE id > ? ORDER BY id ASC`;
+        db.query(query, [lastCheckedIds[table]], (err, results) => {
             if (err) {
                 console.error(`Error fetching latest data from ${table}:`, err);
-                return res.status(500).json({ error: `Error fetching latest data from ${table}` });
-            } else {
-                if (results.length > 0) {
-                    const latestData = results[0];
-                    const value = latestData.value;
-                    const timestamp = latestData.timestamp;
+                return;
+            }
 
-                    console.log(`Latest data from ${table}: Value=${value}, Timestamp=${timestamp}`);
+            results.forEach((data) => {
+                const value = data.value;
+                const timestamp = data.timestamp;
 
-                    if (value > THRESHOLDS[table]) {
-                        console.log(`Threshold exceeded in ${table}: Value=${value} > ${THRESHOLDS[table]}`);
-                        
-                        // Emit the alarm through socket.io
-                        const io = socket.getIo();
-                        io.emit('alarm', { table, value, timestamp });
+                if (value > THRESHOLDS[table]) {
+                    console.log(`Threshold exceeded in ${table}: Value=${value} > ${THRESHOLDS[table]}`);
 
-                        // Create a notification for threshold breach
-                        const userId = req.user ? req.user.id : 1; // Assuming you have user ID from the request, default to 1 if not available
-                        const message = `Alert: ${table} value of ${value} exceeded threshold at ${timestamp}`;
-                        createNotification(userId, 'threshold_breach', message);
-                    } else {
-                        console.log(`Value within threshold in ${table}: Value=${value} <= ${THRESHOLDS[table]}`);
-                    }
-                } else {
-                    console.log(`No data found in ${table} table`);
+                    // Emit the alarm through socket.io
+                    const io = socket.getIo();
+                    io.emit('alarm', { table, value, timestamp });
+
+                    // Create a notification for threshold breach
+                    const userId = 1; // Assuming a single user or use a default user ID
+                    const message = `Alert: ${table} value of ${value} exceeded threshold at ${timestamp}`;
+                    createNotification(userId, 'threshold_breach', message);
                 }
-                completedRequests++;
-                if (completedRequests === tables.length) {
-                    res.status(200).send('Threshold checks completed');
-                }
+            });
+
+            if (results.length > 0) {
+                lastCheckedIds[table] = results[results.length - 1].id;
             }
         });
     });
+};
+
+// Run the checkThresholds function every 30 seconds
+setInterval(checkThresholds, 30000);
+
+exports.checkThresholds = (req, res) => {
+    res.status(200).send('Threshold monitoring is active');
 };
