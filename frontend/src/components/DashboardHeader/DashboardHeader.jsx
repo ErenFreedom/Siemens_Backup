@@ -1,6 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect } from 'react';
 import { Link, useParams, useNavigate } from 'react-router-dom';
 import { FaBell, FaUserCircle } from 'react-icons/fa';
+import { useDispatch, useSelector } from 'react-redux';
+import { fetchNotifications, addNotification } from '../../actions/notificationActions';
 import axios from 'axios';
 import io from 'socket.io-client';
 import logo from '../../assets/logo.png';
@@ -8,51 +10,31 @@ import './DashboardHeader.css';
 
 const DashboardHeader = () => {
   const { userId } = useParams();
-  const [notifications, setNotifications] = useState([]);
-  const [hasNewNotification, setHasNewNotification] = useState(false);
+  const dispatch = useDispatch();
   const navigate = useNavigate();
+  const notifications = useSelector((state) => state.notifications.notifications);
 
   useEffect(() => {
     const token = localStorage.getItem('authToken');
 
-    const fetchNotifications = async () => {
-      try {
-        const response = await axios.get(`${process.env.REACT_APP_API_URL}/notifications`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
-        setNotifications(response.data);
-        if (response.data.length > 0) {
-          setHasNewNotification(true);
-        }
-      } catch (error) {
-        console.error('Error fetching notifications:', error);
-      }
-    };
-
-    fetchNotifications();
+    dispatch(fetchNotifications(token));
 
     const socket = io(process.env.REACT_APP_API_URL, {
       auth: { token },
     });
 
     socket.on('alarm', (data) => {
-      setNotifications((prevNotifications) => [
-        ...prevNotifications,
-        {
-          type: 'threshold_breach',
-          message: `Alert: ${data.table} value of ${data.value} exceeded threshold at ${data.timestamp}`,
-          timestamp: data.timestamp,
-        },
-      ]);
-      setHasNewNotification(true);
+      dispatch(addNotification({
+        type: 'threshold_breach',
+        message: `Alert: ${data.table} value of ${data.value} exceeded threshold at ${data.timestamp}`,
+        timestamp: data.timestamp,
+      }));
     });
 
     return () => {
       socket.disconnect();
     };
-  }, []);
+  }, [dispatch]);
 
   const handleLogout = async () => {
     const token = localStorage.getItem('authToken');
@@ -93,7 +75,6 @@ const DashboardHeader = () => {
 
   const handleNotificationClick = () => {
     navigate('/notifications');
-    setHasNewNotification(false);
   };
 
   return (
@@ -104,18 +85,7 @@ const DashboardHeader = () => {
       </div>
       <div className="header-options">
         <div className="notification-dropdown" onClick={handleNotificationClick}>
-          <FaBell className={`icon ${hasNewNotification ? 'new-notification' : ''}`} />
-          <div className="dropdown-content">
-            {notifications.length === 0 ? (
-              <p>No new notifications</p>
-            ) : (
-              notifications.map((notification, index) => (
-                <p key={index}>
-                  {notification.message} at {new Date(notification.timestamp).toLocaleString()}
-                </p>
-              ))
-            )}
-          </div>
+          <FaBell className={`icon ${notifications.length > 0 ? 'new-notification' : ''}`} />
         </div>
         <div className="report-button">
           <Link to={`/report/${userId}`}>

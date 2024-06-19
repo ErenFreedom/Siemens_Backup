@@ -1,51 +1,29 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import React from 'react';
+import { useSelector } from 'react-redux';
+import { Link } from 'react-router-dom';
 import './Notifications.css';
 
 const Notifications = () => {
-  const [notifications, setNotifications] = useState([]);
-  const navigate = useNavigate();
-
-  useEffect(() => {
-    const fetchNotifications = async () => {
-      const token = localStorage.getItem('authToken');
-      try {
-        const response = await axios.get(`${process.env.REACT_APP_API_URL}/notifications`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
-        setNotifications(response.data);
-      } catch (error) {
-        console.error('Error fetching notifications:', error);
-      }
-    };
-
-    fetchNotifications();
-  }, []);
-
-  const handleBackToDashboard = () => {
-    navigate(`/dashboard/${localStorage.getItem('userId')}`);
-  };
+  const notifications = useSelector((state) => state.notifications.notifications);
 
   return (
     <div className="notifications-container">
-      <h2>Notifications</h2>
-      {notifications.length === 0 ? (
-        <p>No new notifications</p>
-      ) : (
-        <ul>
-          {notifications.map((notification, index) => (
-            <li key={index}>
-              {notification.message} at {new Date(notification.timestamp).toLocaleString()}
-            </li>
-          ))}
-        </ul>
-      )}
-      <button className="back-button" onClick={handleBackToDashboard}>
-        Back to Dashboard
-      </button>
+      <h1>Notifications</h1>
+      <div className="notifications-list">
+        {notifications.length === 0 ? (
+          <p>No notifications available</p>
+        ) : (
+          notifications.map((notification, index) => (
+            <div key={index} className="notification-item">
+              <p>{notification.message}</p>
+              <span>{new Date(notification.timestamp).toLocaleString()}</span>
+            </div>
+          ))
+        )}
+      </div>
+      <Link to="/dashboard">
+        <button className="back-to-dashboard">Back to Dashboard</button>
+      </Link>
     </div>
   );
 };
