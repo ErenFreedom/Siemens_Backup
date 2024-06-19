@@ -81,8 +81,8 @@ const DashboardHeader = () => {
     <div className="dashboard-header-container">
       <div className="dashboard-logo-container">
         <img src={logo} className="dashboard-logo" alt="Platform Logo" />
+        <h1 className="intelli-monitor-heading">IntelliMonitor</h1>
       </div>
-      <h1 className="intelli-monitor-heading">IntelliMonitor</h1>
       <div className="dashboard-header-options">
         <div className="dashboard-notification-dropdown" onClick={handleNotificationClick}>
           <FaBell className={`dashboard-icon ${notifications.length > 0 ? 'new-notification' : ''}`} />
