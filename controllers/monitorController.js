@@ -8,7 +8,7 @@ const THRESHOLDS = {
     rh: 60          // Relative Humidity threshold in percentage
 };
 
-exports.checkThresholds = (req, res) => {
+exports.checkThresholds = () => {
     const tables = ['temp', 'pressure', 'humidity', 'rh'];
     let completedRequests = 0;
 
@@ -17,7 +17,6 @@ exports.checkThresholds = (req, res) => {
         db.query(query, (err, results) => {
             if (err) {
                 console.error(`Error fetching latest data from ${table}:`, err);
-                return res.status(500).json({ error: `Error fetching latest data from ${table}` });
             } else {
                 if (results.length > 0) {
                     const latestData = results[0];
@@ -34,7 +33,7 @@ exports.checkThresholds = (req, res) => {
                         io.emit('alarm', { table, value, timestamp });
 
                         // Insert a notification for threshold breach
-                        const userId = req.user.id; // Assuming you have user ID from the request
+                        const userId = 1; // Assuming a default user ID for now, adjust as needed
                         const message = `Alert: ${table} value of ${value} exceeded threshold at ${timestamp}`;
                         const notificationQuery = `INSERT INTO notifications (user_id, message) VALUES (?, ?)`;
                         db.query(notificationQuery, [userId, message], (notificationErr) => {
@@ -52,9 +51,21 @@ exports.checkThresholds = (req, res) => {
                 }
                 completedRequests++;
                 if (completedRequests === tables.length) {
-                    res.status(200).send('Threshold checks completed');
+                    console.log('Threshold checks completed');
                 }
             }
         });
+    });
+};
+
+exports.clearNotifications = (req, res) => {
+    const userId = req.user.id; // Assuming you have user ID from the request
+    const query = `DELETE FROM notifications WHERE user_id = ?`;
+    db.query(query, [userId], (err, results) => {
+        if (err) {
+            console.error('Error clearing notifications:', err);
+            return res.status(500).json({ error: 'Error clearing notifications' });
+        }
+        res.json({ message: 'Notifications cleared successfully' });
     });
 };

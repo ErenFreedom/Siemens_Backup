@@ -1,4 +1,3 @@
-// server.js
 const express = require('express');
 const bodyParser = require('body-parser');
 const helmet = require('helmet');
@@ -21,9 +20,7 @@ const reportRoutes = require('./routes/reportRoutes');
 const graphRoutes = require('./routes/graphRoutes');
 const notificationRoutes = require('./routes/notificationRoutes');
 const accountRoutes = require('./routes/accountRoutes');
-const monitorRoutes = require('./routes/monitorRoutes');
-
-require('./scheduler'); // Add this line
+const monitorRoutes = require('./routes/monitorRoutes'); // Add this line
 
 app.use(bodyParser.json());
 app.use(helmet());
@@ -53,6 +50,9 @@ io.on('connection', (socket) => {
     console.log('Client disconnected');
   });
 });
+
+// Start the scheduler
+require('./scheduler');
 
 // Start the server
 server.listen(port, () => {
