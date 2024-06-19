@@ -46,6 +46,11 @@ const DashboardHeader = () => {
     }
   };
 
+  const handleNotificationClick = () => {
+    console.log('Bell icon clicked. Navigating to notifications...');
+    navigate('/notifications');
+  };
+
   return (
     <div className="dashboard-header-container">
       <div className="dashboard-logo-container">
@@ -54,7 +59,7 @@ const DashboardHeader = () => {
       </div>
       <div className="dashboard-header-options">
         <div className="dashboard-notification-dropdown">
-          <FaBell className="dashboard-icon" onClick={() => navigate('/notifications')} />
+          <FaBell className="dashboard-icon" onClick={handleNotificationClick} />
         </div>
         <div className="dashboard-report-button">
           <Link to={`/report/${userId}`}>
