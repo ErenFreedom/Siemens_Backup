@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { FaBell, FaUserCircle } from 'react-icons/fa';
 import axios from 'axios';
@@ -9,19 +9,35 @@ import './DashboardHeader.css';
 const DashboardHeader = () => {
   const { userId } = useParams();
   const [notifications, setNotifications] = useState([]);
-  const [showDropdown, setShowDropdown] = useState(false);
-  const token = localStorage.getItem('authToken');
 
   useEffect(() => {
+    const token = localStorage.getItem('authToken');
+    const fetchNotifications = async () => {
+      try {
+        const response = await axios.get(`${process.env.REACT_APP_API_URL}/notifications`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+        setNotifications(response.data);
+      } catch (error) {
+        console.error('Error fetching notifications:', error);
+      }
+    };
+
+    fetchNotifications();
+
     const socket = io(process.env.REACT_APP_API_URL, {
-      query: { token },
+      auth: { token },
     });
 
     socket.on('alarm', (data) => {
       setNotifications((prevNotifications) => [
         ...prevNotifications,
         {
-          message: `Alarm: ${data.table} value of ${data.value} exceeded threshold at ${data.timestamp}`,
+          type: 'threshold_breach',
+          message: `Alert: ${data.table} value of ${data.value} exceeded threshold at ${data.timestamp}`,
+          timestamp: data.timestamp,
         },
       ]);
     });
@@ -29,9 +45,10 @@ const DashboardHeader = () => {
     return () => {
       socket.disconnect();
     };
-  }, [token]);
+  }, []);
 
   const handleLogout = async () => {
+    const token = localStorage.getItem('authToken');
     try {
       await axios.post(
         `${process.env.REACT_APP_API_URL}/account/logout`,
@@ -50,6 +67,7 @@ const DashboardHeader = () => {
   };
 
   const handleDeleteAccount = async () => {
+    const token = localStorage.getItem('authToken');
     try {
       await axios.post(
         `${process.env.REACT_APP_API_URL}/account/generate-otp`,
@@ -66,10 +84,6 @@ const DashboardHeader = () => {
     }
   };
 
-  const toggleDropdown = () => {
-    setShowDropdown(!showDropdown);
-  };
-
   return (
     <div className="header-container">
       <div className="logo-container">
@@ -77,22 +91,19 @@ const DashboardHeader = () => {
         <h1>IntelliMonitor</h1>
       </div>
       <div className="header-options">
-        <div className="notification-dropdown" onClick={toggleDropdown}>
+        <div className="notification-dropdown">
           <FaBell className="icon" />
-          {notifications.length > 0 && (
-            <span className="notification-count">{notifications.length}</span>
-          )}
-          {showDropdown && (
-            <div className="dropdown-content show">
-              {notifications.length === 0 ? (
-                <p>No new notifications</p>
-              ) : (
-                notifications.map((notification, index) => (
-                  <p key={index}>{notification.message}</p>
-                ))
-              )}
-            </div>
-          )}
+          <div className="dropdown-content">
+            {notifications.length === 0 ? (
+              <p>No new notifications</p>
+            ) : (
+              notifications.map((notification, index) => (
+                <p key={index}>
+                  {notification.message} at {new Date(notification.timestamp).toLocaleString()}
+                </p>
+              ))
+            )}
+          </div>
         </div>
         <div className="report-button">
           <Link to={`/report/${userId}`}>
