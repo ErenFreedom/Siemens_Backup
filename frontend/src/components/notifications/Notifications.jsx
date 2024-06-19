@@ -1,11 +1,12 @@
 import React, { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { fetchNotifications } from '../../actions/notificationActions';
+import { fetchNotifications } from '../../reducers/notificationSlice';
 import './Notifications.css';
 
-const Notifications = () => {
+const NotificationPage = () => {
   const dispatch = useDispatch();
   const notifications = useSelector((state) => state.notifications.notifications);
+  const error = useSelector((state) => state.notifications.error);
 
   useEffect(() => {
     const token = localStorage.getItem('authToken');
@@ -15,23 +16,24 @@ const Notifications = () => {
   }, [dispatch]);
 
   return (
-    <div className="notifications-page">
-      <h2>Notifications</h2>
-      <div className="notifications-list">
-        {notifications.length === 0 ? (
-          <p>No notifications available</p>
-        ) : (
-          notifications.map((notification, index) => (
-            <div key={index} className="notification-item">
+    <div className="notification-page-container">
+      <h1>Notifications</h1>
+      {error && <p className="error">{error}</p>}
+      {notifications.length === 0 ? (
+        <p>No notifications available</p>
+      ) : (
+        <ul className="notification-list">
+          {notifications.map((notification, index) => (
+            <li key={index} className={`notification-item ${notification.status}`}>
               <p>{notification.message}</p>
               <span>{new Date(notification.timestamp).toLocaleString()}</span>
-            </div>
-          ))
-        )}
-      </div>
-      <button className="back-button" onClick={() => window.history.back()}>Back to Dashboard</button>
+            </li>
+          ))}
+        </ul>
+      )}
+      <button onClick={() => window.history.back()}>Back to Dashboard</button>
     </div>
   );
 };
 
-export default Notifications;
+export default NotificationPage;

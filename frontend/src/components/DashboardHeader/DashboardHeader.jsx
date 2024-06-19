@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import { Link, useParams, useNavigate } from 'react-router-dom';
 import { FaBell, FaUserCircle } from 'react-icons/fa';
 import axios from 'axios';
@@ -54,7 +54,7 @@ const DashboardHeader = () => {
       </div>
       <div className="dashboard-header-options">
         <div className="dashboard-notification-dropdown">
-          <FaBell className="dashboard-icon" />
+          <FaBell className="dashboard-icon" onClick={() => navigate('/notifications')} />
         </div>
         <div className="dashboard-report-button">
           <Link to={`/report/${userId}`}>
