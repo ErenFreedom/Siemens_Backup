@@ -1,15 +1,37 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { FaBell, FaUserCircle } from 'react-icons/fa';
 import axios from 'axios';
+import io from 'socket.io-client';
 import logo from '../../assets/logo.png';
 import './DashboardHeader.css';
 
 const DashboardHeader = () => {
   const { userId } = useParams();
+  const [notifications, setNotifications] = useState([]);
+  const [showDropdown, setShowDropdown] = useState(false);
+  const token = localStorage.getItem('authToken');
+
+  useEffect(() => {
+    const socket = io(process.env.REACT_APP_API_URL, {
+      query: { token },
+    });
+
+    socket.on('alarm', (data) => {
+      setNotifications((prevNotifications) => [
+        ...prevNotifications,
+        {
+          message: `Alarm: ${data.table} value of ${data.value} exceeded threshold at ${data.timestamp}`,
+        },
+      ]);
+    });
+
+    return () => {
+      socket.disconnect();
+    };
+  }, [token]);
 
   const handleLogout = async () => {
-    const token = localStorage.getItem('authToken');
     try {
       await axios.post(
         `${process.env.REACT_APP_API_URL}/account/logout`,
@@ -28,7 +50,6 @@ const DashboardHeader = () => {
   };
 
   const handleDeleteAccount = async () => {
-    const token = localStorage.getItem('authToken');
     try {
       await axios.post(
         `${process.env.REACT_APP_API_URL}/account/generate-otp`,
@@ -45,6 +66,10 @@ const DashboardHeader = () => {
     }
   };
 
+  const toggleDropdown = () => {
+    setShowDropdown(!showDropdown);
+  };
+
   return (
     <div className="header-container">
       <div className="logo-container">
@@ -52,11 +77,22 @@ const DashboardHeader = () => {
         <h1>IntelliMonitor</h1>
       </div>
       <div className="header-options">
-        <div className="notification-dropdown">
+        <div className="notification-dropdown" onClick={toggleDropdown}>
           <FaBell className="icon" />
-          <div className="dropdown-content">
-            <p>No new notifications</p>
-          </div>
+          {notifications.length > 0 && (
+            <span className="notification-count">{notifications.length}</span>
+          )}
+          {showDropdown && (
+            <div className="dropdown-content show">
+              {notifications.length === 0 ? (
+                <p>No new notifications</p>
+              ) : (
+                notifications.map((notification, index) => (
+                  <p key={index}>{notification.message}</p>
+                ))
+              )}
+            </div>
+          )}
         </div>
         <div className="report-button">
           <Link to={`/report/${userId}`}>
