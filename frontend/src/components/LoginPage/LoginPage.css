@@ -132,3 +132,120 @@ body.login-page-body {
     border-radius: 10px;
   }
   
+
+  /* Media queries for smaller screens */
+
+/* For laptops */
+@media (max-width: 1024px) {
+  body.login-page-body .login-form-container {
+    margin-right: 20px;
+  }
+
+  body.login-page-body .login-form-container h2 {
+    font-size: 24px;
+  }
+
+  body.login-page-body .login-form input {
+    padding: 10px;
+  }
+
+  body.login-page-body .login-form button {
+    padding: 10px;
+    font-size: 16px;
+  }
+
+  body.login-page-body .header-container {
+    padding: 10px 0;
+  }
+
+  body.login-page-body .header-container h1 {
+    font-size: 24px;
+  }
+}
+
+/* For iPads and tablets */
+@media (max-width: 768px) {
+  body.login-page-body .header-container {
+    padding: 10px 0;
+  }
+
+  body.login-page-body .logo {
+    height: 60px;
+  }
+
+  body.login-page-body .header-container h1 {
+    font-size: 22px;
+  }
+
+  body.login-page-body .login-content {
+    flex-direction: column;
+    align-items: center;
+    padding: 10px;
+  }
+
+  body.login-page-body .login-form-container {
+    margin-right: 0;
+    padding: 20px;
+  }
+
+  body.login-page-body .login-form-container h2 {
+    font-size: 22px;
+  }
+
+  body.login-page-body .login-form input {
+    padding: 8px;
+  }
+
+  body.login-page-body .login-form button {
+    padding: 8px;
+    font-size: 14px;
+  }
+}
+
+/* For iPhones and Samsung phones */
+@media (max-width: 480px) {
+  body.login-page-body .header-container {
+    padding: 10px 0;
+  }
+
+  body.login-page-body .logo {
+    height: 40px;
+  }
+
+  body.login-page-body .header-container h1 {
+    font-size: 18px;
+  }
+
+  body.login-page-body .login-content {
+    flex-direction: column;
+    align-items: center;
+    padding: 10px;
+  }
+
+  body.login-page-body .login-form-container {
+    margin-right: 0;
+    padding: 15px;
+  }
+
+  body.login-page-body .login-form-container h2 {
+    font-size: 18px;
+  }
+
+  body.login-page-body .login-form input {
+    padding: 6px;
+  }
+
+  body.login-page-body .login-form button {
+    padding: 6px;
+    font-size: 12px;
+  }
+
+  body.login-page-body .gif-container {
+    max-width: 100%;
+    height: auto;
+  }
+
+  body.login-page-body .gif-image {
+    max-height: 20vh;
+  }
+}

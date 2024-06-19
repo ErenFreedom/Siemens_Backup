@@ -105,3 +105,120 @@ body.otp-page-body .message {
     color: green;
     margin-top: 10px;
 }
+
+
+/* Media queries for smaller screens */
+
+/* For laptops */
+@media (max-width: 1024px) {
+    body.otp-page-body .header-container {
+      padding: 10px 0;
+      height: 60px;
+    }
+  
+    body.otp-page-body .logo {
+      height: 60px;
+      margin-top: 20px;
+      margin-bottom: 20px;
+    }
+  
+    body.otp-page-body .header-container h1 {
+      font-size: 24px;
+    }
+  
+    body.otp-page-body .otp-content {
+      padding: 15px;
+    }
+  
+    body.otp-page-body .otp-inputs input {
+      width: 40px;
+      height: 40px;
+      font-size: 20px;
+    }
+  
+    body.otp-page-body .verify-button {
+      padding: 10px;
+      font-size: 16px;
+    }
+  }
+  
+  /* For iPads and tablets */
+  @media (max-width: 768px) {
+    body.otp-page-body .header-container {
+      padding: 10px 0;
+      height: 50px;
+    }
+  
+    body.otp-page-body .logo {
+      height: 50px;
+      margin-top: 15px;
+      margin-bottom: 15px;
+    }
+  
+    body.otp-page-body .header-container h1 {
+      font-size: 22px;
+    }
+  
+    body.otp-page-body .otp-content {
+      padding: 10px;
+    }
+  
+    body.otp-page-body .otp-image {
+      width: 120px;
+      height: 120px;
+      margin-bottom: 15px;
+    }
+  
+    body.otp-page-body .otp-inputs input {
+      width: 35px;
+      height: 35px;
+      font-size: 18px;
+      margin: 0 3px;
+    }
+  
+    body.otp-page-body .verify-button {
+      padding: 8px;
+      font-size: 14px;
+    }
+  }
+  
+  /* For iPhones and Samsung phones */
+  @media (max-width: 480px) {
+    body.otp-page-body .header-container {
+      padding: 5px 0;
+      height: 40px;
+    }
+  
+    body.otp-page-body .logo {
+      height: 40px;
+      margin-top: 10px;
+      margin-bottom: 10px;
+    }
+  
+    body.otp-page-body .header-container h1 {
+      font-size: 18px;
+    }
+  
+    body.otp-page-body .otp-content {
+      padding: 5px;
+    }
+  
+    body.otp-page-body .otp-image {
+      width: 100px;
+      height: 100px;
+      margin-bottom: 10px;
+    }
+  
+    body.otp-page-body .otp-inputs input {
+      width: 30px;
+      height: 30px;
+      font-size: 16px;
+      margin: 0 2px;
+    }
+  
+    body.otp-page-body .verify-button {
+      padding: 6px;
+      font-size: 12px;
+    }
+  }
+  

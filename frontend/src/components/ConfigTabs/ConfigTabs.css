@@ -53,3 +53,85 @@
   margin: 5px 0;
   line-height: 1.5;
 }
+
+
+/* Media queries for smaller screens */
+
+/* For laptops */
+@media (max-width: 1024px) {
+  .config-content {
+    width: 90%; /* Adjust width for smaller screens */
+  }
+
+  .filter-select {
+    font-size: 0.9em; /* Adjust font size */
+    padding: 8px; /* Adjust padding */
+  }
+
+  .metrics {
+    width: 90%; /* Adjust width for smaller screens */
+  }
+
+  .metrics p {
+    font-size: 1em; /* Adjust font size */
+  }
+}
+
+/* For iPads and tablets */
+@media (max-width: 768px) {
+  .config-tabs {
+    flex-direction: column; /* Stack tabs vertically */
+    align-items: center; /* Center align tabs */
+  }
+
+  .config-tab {
+    margin-bottom: 10px; /* Add margin between tabs */
+  }
+
+  .config-content {
+    width: 95%; /* Adjust width for tablets */
+  }
+
+  .filter-select {
+    font-size: 0.85em; /* Adjust font size */
+    padding: 7px; /* Adjust padding */
+  }
+
+  .metrics {
+    width: 95%; /* Adjust width for tablets */
+  }
+
+  .metrics p {
+    font-size: 0.95em; /* Adjust font size */
+  }
+}
+
+/* For iPhones and Samsung phones */
+@media (max-width: 480px) {
+  .config-tabs {
+    flex-direction: column; /* Stack tabs vertically */
+    align-items: center; /* Center align tabs */
+  }
+
+  .config-tab {
+    margin-bottom: 8px; /* Add margin between tabs */
+    padding: 8px; /* Adjust padding */
+  }
+
+  .config-content {
+    width: 100%; /* Adjust width for phones */
+  }
+
+  .filter-select {
+    font-size: 0.8em; /* Adjust font size */
+    padding: 6px; /* Adjust padding */
+  }
+
+  .metrics {
+    width: 100%; /* Adjust width for phones */
+  }
+
+  .metrics p {
+    font-size: 0.9em; /* Adjust font size */
+  }
+}

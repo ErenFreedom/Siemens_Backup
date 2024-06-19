@@ -94,3 +94,85 @@
 .report-button button:hover {
   background-color: #21a1f1;
 }
+
+
+/* Media queries for smaller screens */
+
+/* For laptops */
+@media (max-width: 1024px) {
+  .header-container {
+    padding: 10px 15px; /* Adjust padding for smaller screens */
+  }
+
+  .logo {
+    height: 50px; /* Adjust logo size */
+    margin-right: 10px; /* Adjust margin */
+  }
+
+  .header-options {
+    gap: 50px; /* Adjust gap between icons */
+  }
+
+  .icon {
+    font-size: 25px; /* Adjust icon size */
+  }
+
+  .report-button button {
+    padding: 12px 25px; /* Adjust button padding */
+    font-size: 16px; /* Adjust button font size */
+  }
+}
+
+/* For iPads and tablets */
+@media (max-width: 768px) {
+  .header-container {
+    padding: 10px; /* Adjust padding for tablets */
+    flex-direction: column; /* Stack elements vertically */
+  }
+
+  .logo-container {
+    margin-left: 0; /* Remove left margin */
+    margin-bottom: 10px; /* Add bottom margin */
+  }
+
+  .header-options {
+    gap: 30px; /* Adjust gap between icons */
+    justify-content: center; /* Center align icons */
+  }
+
+  .icon {
+    font-size: 22px; /* Adjust icon size */
+  }
+
+  .report-button button {
+    padding: 10px 20px; /* Adjust button padding */
+    font-size: 14px; /* Adjust button font size */
+  }
+}
+
+/* For iPhones and Samsung phones */
+@media (max-width: 480px) {
+  .header-container {
+    padding: 5px; /* Adjust padding for phones */
+    flex-direction: column; /* Stack elements vertically */
+  }
+
+  .logo {
+    height: 40px; /* Adjust logo size */
+    margin-right: 5px; /* Adjust margin */
+  }
+
+  .header-options {
+    gap: 20px; /* Adjust gap between icons */
+    justify-content: center; /* Center align icons */
+  }
+
+  .icon {
+    font-size: 20px; /* Adjust icon size */
+  }
+
+  .report-button button {
+    padding: 8px 15px; /* Adjust button padding */
+    font-size: 12px; /* Adjust button font size */
+  }
+}

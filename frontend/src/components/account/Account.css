@@ -90,3 +90,56 @@
     background-color: #0056b3;
   }
   
+
+  /* Media queries for smaller screens */
+
+/* For laptops */
+@media (max-width: 1024px) {
+  .account-form, .password-prompt-form {
+    padding: 30px; /* Adjust padding */
+    max-width: 350px; /* Adjust max-width */
+  }
+
+  .account-form h2, .password-prompt-form h2 {
+    font-size: 24px; /* Adjust font size */
+  }
+
+  .account-form button, .password-prompt-form button {
+    padding: 10px; /* Adjust padding */
+    font-size: 14px; /* Adjust font size */
+  }
+}
+
+/* For iPads and tablets */
+@media (max-width: 768px) {
+  .account-form, .password-prompt-form {
+    padding: 25px; /* Adjust padding */
+    max-width: 300px; /* Adjust max-width */
+  }
+
+  .account-form h2, .password-prompt-form h2 {
+    font-size: 22px; /* Adjust font size */
+  }
+
+  .account-form button, .password-prompt-form button {
+    padding: 8px; /* Adjust padding */
+    font-size: 13px; /* Adjust font size */
+  }
+}
+
+/* For iPhones and Samsung phones */
+@media (max-width: 480px) {
+  .account-form, .password-prompt-form {
+    padding: 20px; /* Adjust padding */
+    max-width: 280px; /* Adjust max-width */
+  }
+
+  .account-form h2, .password-prompt-form h2 {
+    font-size: 20px; /* Adjust font size */
+  }
+
+  .account-form button, .password-prompt-form button {
+    padding: 7px; /* Adjust padding */
+    font-size: 12px; /* Adjust font size */
+  }
+}
