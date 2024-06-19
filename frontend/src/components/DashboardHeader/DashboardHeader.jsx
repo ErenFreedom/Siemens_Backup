@@ -1,40 +1,13 @@
 import React, { useEffect } from 'react';
 import { Link, useParams, useNavigate } from 'react-router-dom';
 import { FaBell, FaUserCircle } from 'react-icons/fa';
-import { useDispatch, useSelector } from 'react-redux';
-import { fetchNotifications, addNotification } from '../../actions/notificationActions';
 import axios from 'axios';
-import io from 'socket.io-client';
 import logo from '../../assets/logo.png';
 import './DashboardHeader.css';
 
 const DashboardHeader = () => {
   const { userId } = useParams();
-  const dispatch = useDispatch();
   const navigate = useNavigate();
-  const notifications = useSelector((state) => state.notifications.notifications);
-
-  useEffect(() => {
-    const token = localStorage.getItem('authToken');
-
-    dispatch(fetchNotifications(token));
-
-    const socket = io(process.env.REACT_APP_API_URL, {
-      auth: { token },
-    });
-
-    socket.on('alarm', (data) => {
-      dispatch(addNotification({
-        type: 'threshold_breach',
-        message: `Alert: ${data.table} value of ${data.value} exceeded threshold at ${data.timestamp}`,
-        timestamp: data.timestamp,
-      }));
-    });
-
-    return () => {
-      socket.disconnect();
-    };
-  }, [dispatch]);
 
   const handleLogout = async () => {
     const token = localStorage.getItem('authToken');
@@ -73,10 +46,6 @@ const DashboardHeader = () => {
     }
   };
 
-  const handleNotificationClick = () => {
-    navigate('/notifications');
-  };
-
   return (
     <div className="dashboard-header-container">
       <div className="dashboard-logo-container">
@@ -84,8 +53,8 @@ const DashboardHeader = () => {
         <h1 className="intelli-monitor-heading">IntelliMonitor</h1>
       </div>
       <div className="dashboard-header-options">
-        <div className="dashboard-notification-dropdown" onClick={handleNotificationClick}>
-          <FaBell className={`dashboard-icon ${notifications.length > 0 ? 'new-notification' : ''}`} />
+        <div className="dashboard-notification-dropdown">
+          <FaBell className="dashboard-icon" />
         </div>
         <div className="dashboard-report-button">
           <Link to={`/report/${userId}`}>
