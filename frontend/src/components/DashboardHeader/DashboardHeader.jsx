@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Link, useParams } from 'react-router-dom';
+import { Link, useParams, useNavigate } from 'react-router-dom';
 import { FaBell, FaUserCircle } from 'react-icons/fa';
 import axios from 'axios';
 import io from 'socket.io-client';
@@ -9,6 +9,8 @@ import './DashboardHeader.css';
 const DashboardHeader = () => {
   const { userId } = useParams();
   const [notifications, setNotifications] = useState([]);
+  const [hasNewNotification, setHasNewNotification] = useState(false);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const token = localStorage.getItem('authToken');
@@ -21,6 +23,9 @@ const DashboardHeader = () => {
           },
         });
         setNotifications(response.data);
+        if (response.data.length > 0) {
+          setHasNewNotification(true);
+        }
       } catch (error) {
         console.error('Error fetching notifications:', error);
       }
@@ -41,6 +46,7 @@ const DashboardHeader = () => {
           timestamp: data.timestamp,
         },
       ]);
+      setHasNewNotification(true);
     });
 
     return () => {
@@ -85,6 +91,11 @@ const DashboardHeader = () => {
     }
   };
 
+  const handleNotificationClick = () => {
+    navigate('/notifications');
+    setHasNewNotification(false);
+  };
+
   return (
     <div className="header-container">
       <div className="logo-container">
@@ -92,8 +103,8 @@ const DashboardHeader = () => {
         <h1>IntelliMonitor</h1>
       </div>
       <div className="header-options">
-        <div className="notification-dropdown">
-          <FaBell className="icon" />
+        <div className="notification-dropdown" onClick={handleNotificationClick}>
+          <FaBell className={`icon ${hasNewNotification ? 'new-notification' : ''}`} />
           <div className="dropdown-content">
             {notifications.length === 0 ? (
               <p>No new notifications</p>

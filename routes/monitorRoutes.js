@@ -1,9 +1,10 @@
 const express = require('express');
-const router = express.Router();
-const { checkThresholds } = require('../controllers/monitorController');
+const { checkThresholds, getNotifications } = require('../controllers/monitorController');
 const authenticateToken = require('../middlewares/authenticateToken');
 
-// Route to start threshold checks
-router.get('/monitor/check', authenticateToken, checkThresholds);
+const router = express.Router();
+
+router.get('/monitor', authenticateToken, checkThresholds);
+router.get('/notifications', authenticateToken, getNotifications);
 
 module.exports = router;
