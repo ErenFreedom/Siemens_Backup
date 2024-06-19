@@ -14,9 +14,15 @@ const DashboardPage = () => {
   useEffect(() => {
     const token = localStorage.getItem('authToken');
     if (token) {
+      console.log('Dispatching fetchData with token:', token);
       dispatch(fetchData({ url: `${process.env.REACT_APP_API_URL}/latest`, token }));
     }
-  }, [dispatch]);
+  }, [dispatch, userId]);
+
+  useEffect(() => {
+    console.log('Fetched data:', data);
+    console.log('Error:', error);
+  }, [data, error]);
 
   return (
     <div className="dashboard-page-container">
