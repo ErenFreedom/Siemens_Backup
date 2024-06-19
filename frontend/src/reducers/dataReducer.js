@@ -1,12 +1,14 @@
+import { createSlice } from '@reduxjs/toolkit';
+import { fetchData, fetchTempData, fetchRhData, fetchPressureData, fetchHumidityData } from '../actions/dataActions';
+
 const dataSlice = createSlice({
   name: 'data',
   initialState: {
-    data: {
-      temp: null,
-      pressure: null,
-      rh: null,
-      humidity: null,
-    },
+    data: null,
+    tempData: null,
+    rhData: null,
+    pressureData: null,
+    humidityData: null,
     error: null,
   },
   reducers: {},
@@ -54,3 +56,5 @@ const dataSlice = createSlice({
       });
   },
 });
+
+export default dataSlice.reducer;

@@ -8,15 +8,15 @@ import './DashboardPage.css';
 const DashboardPage = () => {
   const { userId } = useParams();
   const dispatch = useDispatch();
-  const data = useSelector((state) => state.data?.data);
-  const error = useSelector((state) => state.data?.error);
+  const data = useSelector((state) => state.data.data);
+  const error = useSelector((state) => state.data.error);
 
   useEffect(() => {
     const token = localStorage.getItem('authToken');
     if (token) {
       dispatch(fetchData({ url: `${process.env.REACT_APP_API_URL}/latest`, token }));
     }
-  }, [dispatch, userId]);
+  }, [dispatch]);
 
   return (
     <div className="dashboard-page-container">
