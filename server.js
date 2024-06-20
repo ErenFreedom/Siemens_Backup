@@ -1,3 +1,4 @@
+// server.js
 const express = require('express');
 const bodyParser = require('body-parser');
 const helmet = require('helmet');
@@ -18,7 +19,6 @@ const loggerRoutes = require('./routes/loggerRoutes');
 const latestDataRoutes = require('./routes/latestDataRoutes');
 const reportRoutes = require('./routes/reportRoutes');
 const graphRoutes = require('./routes/graphRoutes');
-const notificationRoutes = require('./routes/notificationRoutes');
 const accountRoutes = require('./routes/accountRoutes');
 const monitorRoutes = require('./routes/monitorRoutes'); // Add this line
 
@@ -39,7 +39,6 @@ app.use(loggerRoutes);
 app.use('/api', latestDataRoutes); // Adding the new route for latest data
 app.use('/api', reportRoutes); // Adding the new route for report generation
 app.use('/api', graphRoutes); // Adding the new route for graph data
-app.use('/api', notificationRoutes); // Adding the new route for notifications
 app.use('/api', accountRoutes); // Adding the new route for account actions
 app.use('/api', monitorRoutes); // Adding the new route for monitoring
 

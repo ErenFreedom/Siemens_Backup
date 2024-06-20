@@ -2,42 +2,34 @@
 const db = require('../config/db');
 
 const THRESHOLDS = {
-    temp: 35,
-    pressure: 1015,
-    humidity: 70,
-    rh: 60
+    temp: 35,       // Temperature threshold
+    pressure: 1015, // Pressure threshold in hPa
+    humidity: 70,   // Humidity threshold in percentage
+    rh: 60          // Relative Humidity threshold in percentage
 };
 
 exports.checkThresholds = (req, res) => {
     const tables = ['temp', 'pressure', 'humidity', 'rh'];
-    const notifications = [];
-    let completedRequests = 0;
+    const alerts = [];
 
-    tables.forEach((table) => {
-        const query = `SELECT * FROM ${table}`;
-        const threshold = THRESHOLDS[table];
-
-        db.query(query, (err, results) => {
+    tables.forEach((table, index) => {
+        const query = `SELECT * FROM ${table} WHERE value > ?`;
+        db.query(query, [THRESHOLDS[table]], (err, results) => {
             if (err) {
                 console.error(`Error fetching data from ${table}:`, err);
                 return res.status(500).json({ error: `Error fetching data from ${table}` });
             } else {
-                results.forEach(row => {
-                    if (row.value > threshold) {
-                        notifications.push({
-                            table,
-                            value: row.value,
-                            timestamp: row.timestamp,
-                            message: `Alert: ${table} value of ${row.value} exceeded threshold at ${row.timestamp}`
-                        });
-                    }
+                results.forEach((row) => {
+                    alerts.push({
+                        table,
+                        value: row.value,
+                        timestamp: row.timestamp,
+                    });
                 });
+            }
 
-                completedRequests++;
-                if (completedRequests === tables.length) {
-                    notifications.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
-                    res.json(notifications);
-                }
+            if (index === tables.length - 1) {
+                res.status(200).json(alerts);
             }
         });
     });
