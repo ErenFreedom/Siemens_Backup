@@ -1,71 +1,40 @@
+// controllers/monitorController.js
 const db = require('../config/db');
-const socket = require('../socket');
 
-const THRESHOLDS = {
-    temp: 35,       // Temperature threshold
-    pressure: 1015, // Pressure threshold in hPa
-    humidity: 70,   // Humidity threshold in percentage
-    rh: 60          // Relative Humidity threshold in percentage
-};
-
-exports.checkThresholds = () => {
+exports.fetchNotifications = (req, res) => {
     const tables = ['temp', 'pressure', 'humidity', 'rh'];
+    const notifications = [];
     let completedRequests = 0;
 
     tables.forEach((table) => {
-        const query = `SELECT * FROM ${table} ORDER BY id DESC LIMIT 1`;
-        db.query(query, (err, results) => {
+        const query = `SELECT * FROM ${table} WHERE value > ? ORDER BY timestamp DESC`;
+        const threshold = {
+            temp: 35,
+            pressure: 1015,
+            humidity: 70,
+            rh: 60
+        }[table];
+
+        db.query(query, [threshold], (err, results) => {
             if (err) {
-                console.error(`Error fetching latest data from ${table}:`, err);
+                console.error(`Error fetching data from ${table}:`, err);
+                return res.status(500).json({ error: `Error fetching data from ${table}` });
             } else {
-                if (results.length > 0) {
-                    const latestData = results[0];
-                    const value = latestData.value;
-                    const timestamp = latestData.timestamp;
+                results.forEach(row => {
+                    notifications.push({
+                        table,
+                        value: row.value,
+                        timestamp: row.timestamp,
+                        message: `Alert: ${table} value of ${row.value} exceeded threshold at ${row.timestamp}`
+                    });
+                });
 
-                    console.log(`Latest data from ${table}: Value=${value}, Timestamp=${timestamp}`);
-
-                    if (value > THRESHOLDS[table]) {
-                        console.log(`Threshold exceeded in ${table}: Value=${value} > ${THRESHOLDS[table]}`);
-                        
-                        // Emit the alarm through socket.io
-                        const io = socket.getIo();
-                        io.emit('alarm', { table, value, timestamp });
-
-                        // Insert a notification for threshold breach
-                        const userId = 1; // Assuming a default user ID for now, adjust as needed
-                        const message = `Alert: ${table} value of ${value} exceeded threshold at ${timestamp}`;
-                        const notificationQuery = `INSERT INTO notifications (user_id, message) VALUES (?, ?)`;
-                        db.query(notificationQuery, [userId, message], (notificationErr) => {
-                            if (notificationErr) {
-                                console.error('Error inserting notification:', notificationErr);
-                            } else {
-                                console.log('Notification inserted successfully');
-                            }
-                        });
-                    } else {
-                        console.log(`Value within threshold in ${table}: Value=${value} <= ${THRESHOLDS[table]}`);
-                    }
-                } else {
-                    console.log(`No data found in ${table} table`);
-                }
                 completedRequests++;
                 if (completedRequests === tables.length) {
-                    console.log('Threshold checks completed');
+                    notifications.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+                    res.json(notifications);
                 }
             }
         });
-    });
-};
-
-exports.clearNotifications = (req, res) => {
-    const userId = req.user.id; // Assuming you have user ID from the request
-    const query = `DELETE FROM notifications WHERE user_id = ?`;
-    db.query(query, [userId], (err, results) => {
-        if (err) {
-            console.error('Error clearing notifications:', err);
-            return res.status(500).json({ error: 'Error clearing notifications' });
-        }
-        res.json({ message: 'Notifications cleared successfully' });
     });
 };
