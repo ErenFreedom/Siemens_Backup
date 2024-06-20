@@ -1,39 +1,50 @@
-import React, { useEffect } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import { fetchNotifications } from '../../reducers/notificationSlice';
+// src/components/notifications/Notifications.jsx
+import React, { useEffect, useState } from 'react';
+import axios from 'axios';
 import './Notifications.css';
 
-const NotificationPage = () => {
-  const dispatch = useDispatch();
-  const notifications = useSelector((state) => state.notifications.notifications);
-  const error = useSelector((state) => state.notifications.error);
+const Notifications = () => {
+  const [alerts, setAlerts] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const token = localStorage.getItem('authToken');
-    if (token) {
-      dispatch(fetchNotifications(token));
-    }
-  }, [dispatch]);
+    const fetchAlerts = async () => {
+      const token = localStorage.getItem('authToken');
+      try {
+        const response = await axios.get(`${process.env.REACT_APP_API_URL}/alerts`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+        setAlerts(response.data);
+        setLoading(false);
+      } catch (error) {
+        console.error('Error fetching alerts:', error);
+        setLoading(false);
+      }
+    };
+
+    fetchAlerts();
+  }, []);
 
   return (
-    <div className="notification-page-container">
-      <h1>Notifications</h1>
-      {error && <p className="error">{error}</p>}
-      {notifications.length === 0 ? (
-        <p>No notifications available</p>
+    <div className="notifications-container">
+      <h2>Notifications</h2>
+      {loading ? (
+        <p>Loading...</p>
       ) : (
-        <ul className="notification-list">
-          {notifications.map((notification, index) => (
-            <li key={index} className={`notification-item ${notification.status}`}>
-              <p>{notification.message}</p>
-              <span>{new Date(notification.timestamp).toLocaleString()}</span>
+        <ul className="notifications-list">
+          {alerts.map((alert, index) => (
+            <li key={index} className="notification-item">
+              <p>Table: {alert.table}</p>
+              <p>Value: {alert.value}</p>
+              <p>Timestamp: {new Date(alert.timestamp).toLocaleString()}</p>
             </li>
           ))}
         </ul>
       )}
-      <button onClick={() => window.history.back()}>Back to Dashboard</button>
     </div>
   );
 };
 
-export default NotificationPage;
+export default Notifications;
